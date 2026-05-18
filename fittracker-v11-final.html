@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitTracker · Basic-Fit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c-bg: #0a0a0f;
+  --c-surface: #111118;
+  --c-surface2: #16161f;
+  --c-surface3: #1c1c28;
+  --c-border: #2a2a3a;
+  --c-border2: #353548;
+  --c-text: #f0f0f8;
+  --c-muted: #8080a0;
+  --c-faint: #404058;
+  --c-accent: #7c6bff;
+  --c-accent2: #a855f7;
+  --c-green: #22d3a0;
+  --c-orange: #fb923c;
+  --c-red: #f87171;
+  --c-gold: #fbbf24;
+  --grad-accent: linear-gradient(135deg, #7c6bff, #a855f7);
+  --grad-green: linear-gradient(135deg, #22d3a0, #059669);
+  --grad-card: linear-gradient(145deg, #16161f, #1c1c28);
+  --sh-glow: 0 0 40px rgba(124,107,255,.15);
+  --sh-card: 0 4px 24px rgba(0,0,0,.4);
+  --r: .75rem; --r-lg: 1rem; --r-xl: 1.5rem; --r-full: 9999px;
+  --tr: 200ms cubic-bezier(.16,1,.3,1);
+  --ff: 'Inter', sans-serif;
+  --ff-h: 'Space Grotesk', sans-serif;
+}
+[data-theme="light"] {
+  --c-bg: #f4f3ff;
+  --c-surface: #ffffff;
+  --c-surface2: #f8f7ff;
+  --c-surface3: #eeecff;
+  --c-border: #dddaf8;
+  --c-border2: #ccc9f0;
+  --c-text: #0d0d1a;
+  --c-muted: #6060a0;
+  --c-faint: #c0bef0;
+  --sh-glow: 0 0 40px rgba(124,107,255,.1);
+  --sh-card: 0 4px 24px rgba(124,107,255,.08);
+  --grad-card: linear-gradient(145deg,#ffffff,#f8f7ff);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body { font-family: var(--ff); background: var(--c-bg); color: var(--c-text); min-height: 100dvh; line-height: 1.6; }
+button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; border-radius: var(--r); }
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,15,.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--c-border);
+  padding: .875rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+[data-theme="light"] header { background: rgba(244,243,255,.85); }
+.logo {
+  display: flex; align-items: center; gap: .625rem;
+  font-family: var(--ff-h); font-size: 1.125rem; font-weight: 700;
+  background: var(--grad-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; white-space: nowrap;
+}
+.logo svg { flex-shrink: 0; }
+
+/* ── NAV ── */
+.nav-wrap { display: flex; gap: .25rem; background: var(--c-surface2); padding: .25rem; border-radius: var(--r-full); border: 1px solid var(--c-border); overflow-x: auto; scrollbar-width: none; }
+.nav-wrap::-webkit-scrollbar { display: none; }
+.nav-tab {
+  padding: .4rem 1rem; border-radius: var(--r-full);
+  font-size: .8125rem; font-weight: 600; color: var(--c-muted);
+  transition: all var(--tr); white-space: nowrap; letter-spacing: .01em;
+}
+.nav-tab.active {
+  background: var(--grad-accent); color: #fff;
+  box-shadow: 0 2px 12px rgba(124,107,255,.4);
+}
+.nav-tab:hover:not(.active) { color: var(--c-text); background: var(--c-surface3); }
+
+/* ── THEME BTN ── */
+.theme-btn {
+  width: 38px; height: 38px; border-radius: var(--r-full);
+  background: var(--c-surface2); border: 1px solid var(--c-border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--c-muted); transition: all var(--tr); flex-shrink: 0;
+}
+.theme-btn:hover { color: var(--c-text); border-color: var(--c-accent); }
+
+/* ── MAIN ── */
+main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+.page { display: none; }
+.page.active { display: block; animation: fadeUp .25s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── SECTION TITLE ── */
+.sec-hd {
+  display: flex; align-items: center; gap: .75rem; margin-bottom: 1.75rem;
+}
+.sec-hd h1 {
+  font-family: var(--ff-h); font-size: clamp(1.5rem,3vw,2rem); font-weight: 700;
+  background: var(--grad-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.sec-hd .icon-wrap {
+  width: 42px; height: 42px; border-radius: var(--r); flex-shrink: 0;
+  background: var(--c-surface3); border: 1px solid var(--c-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.125rem;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--grad-card); border: 1px solid var(--c-border);
+  border-radius: var(--r-xl); padding: 1.5rem;
+  box-shadow: var(--sh-card);
+}
+.card-glow { box-shadow: var(--sh-card), var(--sh-glow); border-color: rgba(124,107,255,.3); }
+
+/* ── WEEK / DAY SELECTOR ── */
+.chip-row { display: flex; gap: .375rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.chip {
+  padding: .35rem .875rem; border-radius: var(--r-full);
+  font-size: .8rem; font-weight: 600; border: 1px solid var(--c-border);
+  color: var(--c-muted); cursor: pointer; background: var(--c-surface2);
+  transition: all var(--tr); white-space: nowrap;
+}
+.chip.active { background: var(--grad-accent); color: #fff; border-color: transparent; box-shadow: 0 2px 10px rgba(124,107,255,.35); }
+.chip.done { border-color: var(--c-green); color: var(--c-green); }
+.chip.day-done { background: rgba(34,211,160,.12); border-color: var(--c-green); color: var(--c-green); }
+
+/* ── PROGRESS BAR ── */
+.prog-wrap { background: var(--c-surface3); border-radius: var(--r-full); height: 6px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: var(--r-full); background: var(--grad-accent); transition: width .6s cubic-bezier(.16,1,.3,1); }
+.prog-fill.done { background: var(--grad-green); }
+
+/* ── ACTIVITY CARD ── */
+.act-card {
+  background: var(--c-surface); border: 1px solid var(--c-border);
+  border-radius: var(--r-lg); padding: 1.25rem 1.25rem 1rem;
+  transition: border-color var(--tr), box-shadow var(--tr);
+  position: relative; overflow: hidden;
+}
+.act-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--c-border); border-radius: 3px 0 0 3px;
+  transition: background var(--tr);
+}
+.act-card:hover { border-color: var(--c-border2); }
+.act-card.completed { border-color: rgba(34,211,160,.3); background: rgba(34,211,160,.04); }
+.act-card.completed::before { background: var(--c-green); }
+.act-card.active-card { border-color: rgba(124,107,255,.4); box-shadow: 0 0 20px rgba(124,107,255,.12); }
+.act-card.active-card::before { background: var(--grad-accent); }
+.act-hd { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.act-icon { font-size: 1.25rem; margin-right: .25rem; }
+.act-name { font-family: var(--ff-h); font-weight: 600; font-size: 1rem; }
+.act-sub { font-size: .8rem; color: var(--c-muted); margin-top: .2rem; }
+
+/* ── MACHINE IMAGE ── */
+.machine-block { display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap; margin-top: .875rem; }
+.machine-img {
+  width: 140px; height: 100px; object-fit: cover;
+  border-radius: var(--r); border: 1px solid var(--c-border);
+  background: var(--c-surface3); flex-shrink: 0;
+}
+.machine-desc { flex: 1; min-width: 160px; font-size: .8rem; color: var(--c-muted); line-height: 1.65; }
+
+/* ── MUSCLE TAG ── */
+.muscle-tag {
+  display: inline-flex; align-items: center; gap: .3rem;
+  background: rgba(251,191,36,.1); color: var(--c-gold);
+  border: 1px solid rgba(251,191,36,.2); border-radius: var(--r-full);
+  font-size: .7rem; font-weight: 700; padding: .15rem .6rem; margin-top: .35rem;
+  letter-spacing: .02em; text-transform: uppercase;
+}
+
+/* ── CHECK CIRCLE ── */
+.check-c {
+  width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%;
+  border: 2px solid var(--c-border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; transition: all var(--tr); color: var(--c-muted);
+}
+.check-c.done { background: var(--grad-green); border-color: transparent; color: #fff; font-size: .875rem; }
+
+/* ── BTNS ── */
+.btn {
+  padding: .5rem 1.25rem; border-radius: var(--r-full);
+  font-size: .8125rem; font-weight: 600; border: none; cursor: pointer;
+  transition: all var(--tr); display: inline-flex; align-items: center; gap: .4rem; line-height: 1.4;
+  letter-spacing: .01em;
+}
+.btn-accent { background: var(--grad-accent); color: #fff; box-shadow: 0 2px 12px rgba(124,107,255,.35); }
+.btn-accent:hover { opacity: .85; transform: translateY(-1px); }
+.btn-green { background: var(--grad-green); color: #fff; box-shadow: 0 2px 12px rgba(34,211,160,.3); }
+.btn-green:hover { opacity: .85; transform: translateY(-1px); }
+.btn-ghost { background: var(--c-surface2); color: var(--c-muted); border: 1px solid var(--c-border); }
+.btn-ghost:hover { color: var(--c-text); border-color: var(--c-border2); background: var(--c-surface3); }
+.btn-danger { background: rgba(248,113,113,.15); color: var(--c-red); border: 1px solid rgba(248,113,113,.3); }
+.btn-icon {
+  width: 36px; height: 36px; border-radius: var(--r-full);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--c-surface2); border: 1px solid var(--c-border);
+  color: var(--c-muted); transition: all var(--tr);
+}
+.btn-icon:hover { color: var(--c-text); border-color: var(--c-accent); }
+
+/* ── BADGE ── */
+.badge { padding: .2rem .65rem; border-radius: var(--r-full); font-size: .7rem; font-weight: 700; display: inline-flex; align-items: center; gap: .25rem; letter-spacing: .02em; }
+.badge-accent { background: rgba(124,107,255,.15); color: var(--c-accent); border: 1px solid rgba(124,107,255,.25); }
+.badge-green { background: rgba(34,211,160,.12); color: var(--c-green); border: 1px solid rgba(34,211,160,.2); }
+.badge-orange { background: rgba(251,146,60,.12); color: var(--c-orange); border: 1px solid rgba(251,146,60,.2); }
+.badge-gold { background: rgba(251,191,36,.12); color: var(--c-gold); border: 1px solid rgba(251,191,36,.2); }
+
+/* ── FORM ── */
+.fg { display: flex; flex-direction: column; gap: .35rem; }
+label { font-size: .8rem; font-weight: 600; color: var(--c-muted); text-transform: uppercase; letter-spacing: .04em; }
+input[type=text], input[type=number], input[type=date], textarea, select {
+  width: 100%; padding: .6rem .875rem;
+  background: var(--c-surface2); border: 1px solid var(--c-border);
+  border-radius: var(--r); color: var(--c-text); font-size: .875rem;
+  transition: border-color var(--tr);
+}
+input:focus, textarea:focus { border-color: var(--c-accent); outline: none; box-shadow: 0 0 0 3px rgba(124,107,255,.15); }
+textarea { resize: vertical; min-height: 70px; }
+
+/* ── TIMER ── */
+.timer-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.timer-wrap svg { transform: rotate(-90deg); }
+.timer-inner { position: absolute; text-align: center; }
+.timer-num { font-family: var(--ff-h); font-size: 2rem; font-weight: 700; line-height: 1; color: var(--c-text); }
+.timer-lbl { font-size: .65rem; color: var(--c-muted); text-transform: uppercase; letter-spacing: .08em; margin-top: .25rem; }
+
+/* ── STATS ── */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: 1.25rem; }
+.stat-lbl { font-size: .7rem; color: var(--c-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .5rem; font-weight: 600; }
+.stat-val { font-family: var(--ff-h); font-size: 1.75rem; font-weight: 700; line-height: 1; }
+.stat-change { font-size: .8rem; font-weight: 600; margin-top: .35rem; }
+.clr-green { color: var(--c-green); } .clr-red { color: var(--c-red); }
+
+/* ── PLANNING GRID ── */
+.planning-grid { display: grid; grid-template-columns: 44px repeat(3,1fr); gap: 3px; }
+.pg-hd { background: var(--c-surface3); border-radius: var(--r); padding: .5rem .4rem; font-size: .7rem; font-weight: 700; text-align: center; color: var(--c-muted); text-transform: uppercase; letter-spacing: .05em; }
+.pg-week { background: var(--c-surface2); border: 1px solid var(--c-border); border-radius: var(--r); padding: .5rem; font-size: .75rem; font-weight: 700; color: var(--c-accent); display: flex; align-items: center; justify-content: center; }
+.pg-cell { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r); padding: .4rem; min-height: 52px; }
+.pg-session {
+  border-radius: .4rem; padding: .25rem .4rem; font-size: .7rem; font-weight: 700;
+  cursor: pointer; line-height: 1.4; transition: all var(--tr); text-align: center;
+}
+.pg-full { background: rgba(124,107,255,.15); color: var(--c-accent); border: 1px solid rgba(124,107,255,.25); }
+.pg-full:hover { background: var(--c-accent); color: #fff; }
+.pg-rest { text-align: center; font-size: .75rem; color: var(--c-faint); padding-top: .5rem; }
+
+/* ── MODAL ── */
+.modal-bd { position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(8px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.modal-bd.hidden { display: none; }
+.modal { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-xl); padding: 2rem; max-width: 460px; width: 100%; box-shadow: 0 24px 80px rgba(0,0,0,.6), var(--sh-glow); display: flex; flex-direction: column; gap: 1.25rem; max-height: 90dvh; overflow-y: auto; }
+.modal-title { font-family: var(--ff-h); font-size: 1.25rem; font-weight: 700; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 1000;
+  background: var(--c-surface); border: 1px solid var(--c-border);
+  color: var(--c-text); padding: .875rem 1.25rem;
+  border-radius: var(--r-lg); font-size: .875rem; font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  transform: translateY(100px) scale(.95); opacity: 0;
+  transition: all .3s cubic-bezier(.16,1,.3,1);
+}
+#toast.show { transform: translateY(0) scale(1); opacity: 1; }
+
+/* ── GRIDS ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+
+/* ── DAY HEADER ── */
+.day-header {
+  display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+  margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--c-border);
+}
+.day-title { font-family: var(--ff-h); font-size: 1.25rem; font-weight: 700; }
+.day-subtitle { font-size: .8rem; color: var(--c-muted); margin-top: .25rem; }
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 4rem 2rem; color: var(--c-muted); }
+.empty .emoji { font-size: 3rem; margin-bottom: 1rem; }
+.empty h3 { font-family: var(--ff-h); font-size: 1.25rem; color: var(--c-text); margin-bottom: .5rem; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  header { padding: .625rem 1rem; flex-wrap: wrap; }
+  main { padding: 1rem; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .machine-img { width: 100px; height: 80px; }
+  .g2,.g3 { grid-template-columns: 1fr; }
+}
+@media(max-width:480px){
+  .logo span { display: none; }
+  .nav-tab { padding: .35rem .7rem; font-size: .75rem; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+      <rect x="2" y="10" width="24" height="8" rx="4" stroke="url(#g1)" stroke-width="2.5" fill="none"/>
+      <rect x="0" y="12" width="4" height="4" rx="2" fill="url(#g1)"/>
+      <rect x="24" y="12" width="4" height="4" rx="2" fill="url(#g1)"/>
+      <rect x="8" y="5" width="3" height="18" rx="1.5" fill="url(#g1)" opacity=".6"/>
+      <rect x="17" y="5" width="3" height="18" rx="1.5" fill="url(#g1)" opacity=".6"/>
+      <defs><linearGradient id="g1" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#7c6bff"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+    </svg>
+    <span>FitTracker <span style="opacity:.45;font-weight:400;font-size:.8em">Basic-Fit</span></span>
+  </div>
+  <nav class="nav-wrap">
+    <button class="nav-tab active" onclick="showPage('programme')" id="tab-programme">📅 Programme</button>
+    <button class="nav-tab" onclick="showPage('seance')" id="tab-seance">⏱ Séance</button>
+    <button class="nav-tab" onclick="showPage('planning')" id="tab-planning">🗓 Planning</button>
+    <button class="nav-tab" onclick="showPage('repas')" id="tab-repas">🍽️ Repas</button>
+    <button class="nav-tab" onclick="showPage('poids')" id="tab-poids">⚖️ Poids</button>
+    <button class="nav-tab" onclick="showPage('historique')" id="tab-historique">📝 Historique</button>
+  </nav>
+  <button class="theme-btn" id="theme-toggle" aria-label="Changer le thème">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+</header>
+
+<main>
+
+<!-- PROGRAMME -->
+<div class="page active" id="page-programme">
+  <div class="sec-hd"><div class="icon-wrap">📅</div><h1>Programme 12 semaines</h1></div>
+  <div class="chip-row" id="week-sel"></div>
+  <div class="chip-row" id="day-sel"></div>
+  <div id="day-content"></div>
+</div>
+
+<!-- SÉANCE -->
+<div class="page" id="page-seance">
+  <div class="sec-hd"><div class="icon-wrap">⏱</div><h1>Séance en cours</h1></div>
+  <div id="seance-content"></div>
+</div>
+
+<!-- PLANNING -->
+<div class="page" id="page-planning">
+  <div class="sec-hd"><div class="icon-wrap">🗓</div><h1>Planning 12 semaines</h1></div>
+  <p style="color:var(--c-muted);font-size:.875rem;margin-bottom:1.25rem">Clique sur une séance pour y accéder directement.</p>
+  <div class="card" style="overflow-x:auto">
+    <div id="planning-grid" style="min-width:340px;display:flex;flex-direction:column;gap:3px"></div>
+  </div>
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;align-items:center">
+    <span style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--c-muted)"><span style="width:10px;height:10px;border-radius:3px;background:rgba(124,107,255,.15);border:1px solid rgba(124,107,255,.3);display:inline-block"></span>Séance Full Body</span>
+    <span style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--c-muted)"><span style="width:10px;height:10px;border-radius:3px;background:var(--c-surface3);display:inline-block"></span>Repos</span>
+  </div>
+</div>
+
+<!-- REPAS -->
+<div class="page" id="page-repas">
+  <div class="sec-hd"><div class="icon-wrap">🍽️</div><h1>Planning repas</h1></div>
+  <div class="chip-row" id="meal-day-sel"></div>
+  <div id="meal-content"></div>
+</div>
+
+<!-- POIDS -->
+<div class="page" id="page-poids">
+  <div class="sec-hd"><div class="icon-wrap">⚖️</div><h1>Suivi du poids</h1></div>
+  <div class="stats-grid" id="weight-stats"></div>
+  <div class="card" style="margin-bottom:1.5rem">
+    <h3 style="font-family:var(--ff-h);font-weight:700;margin-bottom:1.25rem">Enregistrer mon poids</h3>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
+      <div class="fg" style="flex:1;min-width:110px"><label>Poids (kg)</label><input type="number" id="w-input" placeholder="82.5" step="0.1" min="30" max="300"></div>
+      <div class="fg" style="flex:1;min-width:130px"><label>Date</label><input type="date" id="w-date"></div>
+      <div class="fg" style="flex:2;min-width:150px"><label>Note</label><input type="text" id="w-note" placeholder="après séance, matin à jeun…"></div>
+      <button class="btn btn-accent" onclick="addWeight()">+ Ajouter</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:1.5rem"><h3 style="font-family:var(--ff-h);font-weight:700;margin-bottom:1rem">Courbe de poids</h3><div style="position:relative;height:220px"><canvas id="w-chart"></canvas></div></div>
+  <div class="card"><h3 style="font-family:var(--ff-h);font-weight:700;margin-bottom:1rem">Historique</h3><div id="w-list"></div></div>
+</div>
+
+<!-- HISTORIQUE -->
+<div class="page" id="page-historique">
+  <div class="sec-hd"><div class="icon-wrap">📝</div><h1>Historique des séances</h1></div>
+  <div id="hist-content"></div>
+</div>
+
+</main>
+
+<!-- MODAL NOTES -->
+<div class="modal-bd hidden" id="note-modal">
+  <div class="modal">
+    <div class="modal-title">📝 Notes & Charges</div>
+    <div id="note-modal-info" style="font-size:.875rem;color:var(--c-muted)"></div>
+    <div class="fg"><label>Charge utilisée</label><input type="text" id="n-charge" placeholder="ex: barre 30 kg, niveau 6…"></div>
+    <div class="fg"><label>Ressenti</label><textarea id="n-text" placeholder="Difficultés, réussites, douleurs, sensations…"></textarea></div>
+    <div style="display:flex;gap:.75rem;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeNote()">Annuler</button>
+      <button class="btn btn-accent" onclick="saveNote()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// IMAGES MACHINES
+// ══════════════════════════════════════════
+const IMGS = {
+  velo:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/6ddf7654e1071f93338d0abdc3b822aab6d4bf27.jpg",
+  tapis:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/a7e8ae4aa7c4f726c7b882874dd04c5969af7866.jpg",
+  presse:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/8d30e25e30a9eb2df0d40b56734832e1f33a9846.jpg",
+  chest:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/5f5e4f2ff0835e4b0b3d6d0dd2c6bb81bfecb2c2.jpg",
+  tirage:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/8d30e25e30a9eb2df0d40b56734832e1f33a9846.jpg",
+  rowing:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/8d30e25e30a9eb2df0d40b56734832e1f33a9846.jpg",
+  leg_curl:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/6ddf7654e1071f93338d0abdc3b822aab6d4bf27.jpg",
+  shoulder:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/5f5e4f2ff0835e4b0b3d6d0dd2c6bb81bfecb2c2.jpg",
+  cable:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/8d30e25e30a9eb2df0d40b56734832e1f33a9846.jpg",
+  abducteur:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/6ddf7654e1071f93338d0abdc3b822aab6d4bf27.jpg",
+  triceps:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/5f5e4f2ff0835e4b0b3d6d0dd2c6bb81bfecb2c2.jpg",
+  rdl:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/6ddf7654e1071f93338d0abdc3b822aab6d4bf27.jpg",
+  fentes:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/6ddf7654e1071f93338d0abdc3b822aab6d4bf27.jpg",
+  abdos:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/5f5e4f2ff0835e4b0b3d6d0dd2c6bb81bfecb2c2.jpg",
+  curl:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/8d30e25e30a9eb2df0d40b56734832e1f33a9846.jpg",
+  squat:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/6ddf7654e1071f93338d0abdc3b822aab6d4bf27.jpg",
+  ohp:"https://pplx-res.cloudinary.com/image/upload/pplx_search_images/5f5e4f2ff0835e4b0b3d6d0dd2c6bb81bfecb2c2.jpg"
+};
+IMGS.legpress = IMGS.presse;
+IMGS.chestpress = IMGS.chest;
+IMGS.latpulldown = IMGS.tirage;
+IMGS.row = IMGS.rowing;
+IMGS.legcurl = IMGS.leg_curl;
+IMGS.bike = IMGS.velo;
+IMGS.treadmill = IMGS.tapis;
+
+function imgFor(nom){
+  const n=nom.toLowerCase();
+  if(n.includes('presse à jambes')||n.includes('leg press'))return IMGS.presse;
+  if(n.includes('chest press'))return IMGS.chest;
+  if(n.includes('tirage')||n.includes('lat pull'))return IMGS.tirage;
+  if(n.includes('rowing')||n.includes('rameur'))return IMGS.rowing;
+  if(n.includes('leg curl')||n.includes('ischio'))return IMGS.leg_curl;
+  if(n.includes('militaire')||n.includes('ohp'))return IMGS.ohp;
+  if(n.includes('shoulder')||n.includes('épaules'))return IMGS.shoulder;
+  if(n.includes('cable')||n.includes('câble')||n.includes('élévation'))return IMGS.cable;
+  if(n.includes('abducteur')||n.includes('adducteur'))return IMGS.abducteur;
+  if(n.includes('triceps')||n.includes('tricep'))return IMGS.triceps;
+  if(n.includes('roumain')||n.includes('soulevé'))return IMGS.rdl;
+  if(n.includes('fentes'))return IMGS.fentes;
+  if(n.includes('abdos')||n.includes('crunch'))return IMGS.abdos;
+  if(n.includes('curl biceps')||n.includes('biceps'))return IMGS.curl;
+  if(n.includes('squat'))return IMGS.squat;
+  if(n.includes('vélo')||n.includes('velo'))return IMGS.velo;
+  return IMGS.tapis;
+}
+
+// ══════════════════════════════════════════
+// HELPERS CRÉATION EXERCICES
+// ══════════════════════════════════════════
+const c=(id,nom,icone,duree,muscles,detail)=>({id,nom,icone,type:'cardio',duree,muscles,detail});
+const m=(id,nom,icone,series,reps,repos,muscles,charge,detail)=>({id,nom,icone,type:'muscu',series,reps,repos,muscles,charge,detail});
+
+// Exercices de base
+const E = {
+  ev:(id,d=480)=>c(id,'Échauffement vélo','🚴',d,'Cardio','Niveau 3-4, allure tranquille, préparation cardiovasculaire.'),
+  et:(id,d=480)=>c(id,'Échauffement tapis','🏃',d,'Cardio','5 km/h, inclinaison 1%, préparation articulaire.'),
+  // BAS DU CORPS
+  pj:(id,s,r)=>m(id,'Presse à jambes','🦵',s,r,75,'Quadriceps · Fessiers · Ischios','20-40 kg','Pieds écartés, descends lentement (2s), pousse sans verrouiller. Début : 20-30 kg.'),
+  lc:(id,s,r)=>m(id,'Leg Curl machine','🦵',s,r,60,'Ischio-jambiers','15-25 kg','Allonge-toi face à la machine, fléchis les jambes en contractant les ischios. Début : 15 kg.'),
+  abduct:(id,s,r)=>m(id,'Abducteur / Adducteur machine','🍑',s,r,60,'Fessiers · Adducteurs · Abducteurs','10-25 kg','Pousse vers l\'extérieur pour abducteurs, vers l\'intérieur pour adducteurs. Début : 10-15 kg.'),
+  fentes:(id,s,r)=>m(id,'Fentes barre','🚶',s,r,60,'Quadriceps · Fessiers','barre 20 kg + disques','Barre sur les trapèzes, un pied devant, descends jusqu\'à 90°, garde le buste droit.'),
+  rdl:(id,s,r)=>m(id,'Soulevé de terre roumain barre (RDL)','🏋️',s,r,75,'Ischios · Fessiers · Dos','barre 20 kg + disques','Dos plat, charnière aux hanches, barre proche des jambes. Descend jusqu\'à tension dans les ischios.'),
+  // HAUT DU CORPS
+  cp:(id,s,r)=>m(id,'Chest Press machine','💪',s,r,75,'Pectoraux · Épaules · Triceps','10-25 kg','Poignées hauteur poitrine, pousse sans hausser épaules. Début : 10-20 kg.'),
+  lat:(id,s,r)=>m(id,'Tirage vertical Lat Pulldown','🙌',s,r,75,'Dos · Biceps','15-30 kg','Tire vers le haut de la poitrine, expire à la descente. Début : 15-25 kg.'),
+  row:(id,s,r)=>m(id,'Rowing assis machine','🚣',s,r,75,'Dos · Biceps · Rhomboïdes','15-30 kg','Omoplates serrées, tire vers bas des côtes, dos droit. Début : 15-25 kg.'),
+  sp:(id,s,r)=>m(id,'Développé militaire barre (OHP)','🙋',s,r,75,'Deltoïdes · Triceps · Trapèzes','barre 20 kg + disques','Barre à hauteur des épaules, pousse vers le haut en expirant, descente contrôlée. Début : barre seule.'),
+  cable:(id,s,r)=>m(id,'Élévations latérales câble','💪',s,r,60,'Épaules latérales','5-10 kg','Câble bas, lève les bras à l\'horizontale, coudes légèrement fléchis. Lent et contrôlé.'),
+  tri:(id,s,r)=>m(id,'Triceps machine câble (pushdown)','💪',s,r,60,'Triceps','10-20 kg','Coudes fixes contre le corps, pousse la barre vers le bas, contrôle la remontée. Début : 10 kg.'),
+  curl:(id,s,r)=>m(id,'Curl biceps barre','💪',s,r,60,'Biceps','barre ez-curl 10-20 kg','Coudes fixes contre le corps, soulève la barre en contractant fort les biceps. Début : barre légère.'),
+  // ABDOS
+  abdos:(id,s,r)=>m(id,'Machine abdominaux (crunch)','🏋️',s,r,45,'Abdominaux','5-15 kg','Expire en contractant fort les abdos, contrôle la remontée. Début : 5-8 kg.'),
+  // CARDIO
+  tm:(id,d,detail)=>c(id,'Tapis incliné marche','🏃',d,'Cardio · Fessiers',detail),
+  ti:(id,d,detail)=>c(id,'Tapis incliné intervalles','⚡',d,'Cardio HIIT',detail),
+  vm:(id,d,detail)=>c(id,'Vélo cardio modéré','🚴',d,'Cardio',detail),
+  rc:(id)=>c(id,'Retour au calme','🧘',300,'Cardio','Marche lente 4 km/h, inclinaison 0%. Récupération active.'),
+};
+
+// ══════════════════════════════════════════
+// PROGRAMME 12 SEMAINES VARIÉ
+// ══════════════════════════════════════════
+// Chaque semaine alterne 3 PROFILS de séance Full Body pour la variété
+// A = Bas du corps dominant + poitrine/dos
+// B = Épaules / bras / abdos + cardio
+// C = Full body composé (soulevés de poids)
+
+const PROGRAMME=[{semaine:1,focus:"Découverte",jours:[{jour:"Lundi",titre:"Machines push + poids libres",objectif:"Découvrir la zone musculation et la zone poids libres.",activites:[{id:"s1j1a1",nom:"Leg Press (zone musculation)",icone:"🦵",duree:"3×12",muscle:"Quadriceps / fessiers",desc:"Pieds largeur épaules, pousse la plateforme sans verrouiller les genoux.",img:IMGS.legpress},{id:"s1j1a2",nom:"Chest Press assise",icone:"🏋️",duree:"3×12",muscle:"Pectoraux / triceps",desc:"Régle le siège pour avoir les poignées à hauteur de poitrine et pousse de façon contrôlée.",img:IMGS.chestpress},{id:"s1j1a3",nom:"Développé haltères sur banc plat",icone:"🏋️‍♂️",duree:"3×10",muscle:"Pectoraux / épaules",desc:"Dans la zone poids libres, descends les haltères lentement puis remonte sans claquer.",img:IMGS.chestpress},{id:"s1j1a4",nom:"Tapis de marche inclinée",icone:"🚶",duree:"12 min",muscle:"Cardio",desc:"Marche rapide en inclinaison légère pour finir la séance.",img:IMGS.treadmill}]},{jour:"Mercredi",titre:"Dos + jambes variées",objectif:"Mélanger tirage guidé et mouvement libre.",activites:[{id:"s1j2a1",nom:"Lat Pulldown",icone:"⬇️",duree:"3×12",muscle:"Dos / biceps",desc:"Poitrine sortie, tire la barre vers le haut des pectoraux sans te balancer.",img:IMGS.latpulldown},{id:"s1j2a2",nom:"Rowing assis à la machine",icone:"🚣",duree:"3×12",muscle:"Dos milieu",desc:"Ramène les poignées vers le nombril et serre les omoplates.",img:IMGS.row},{id:"s1j2a3",nom:"Goblet Squat avec kettlebell",icone:"🏋️",duree:"3×10",muscle:"Cuisses / gainage",desc:"Dans la zone fonctionnelle, garde le buste droit et descends jusqu'à une amplitude confortable.",img:IMGS.legpress},{id:"s1j2a4",nom:"Vélo assis",icone:"🚴",duree:"15 min",muscle:"Cardio",desc:"Rythme modéré et respiration régulière.",img:IMGS.bike}]},{jour:"Vendredi",titre:"Full body technique",objectif:"Varier entre machines, haltères et gainage.",activites:[{id:"s1j3a1",nom:"Leg Curl assis",icone:"🦿",duree:"3×12",muscle:"Ischios",desc:"Contracte derrière la cuisse sans lever les hanches.",img:IMGS.legcurl},{id:"s1j3a2",nom:"Shoulder Press machine",icone:"💪",duree:"3×10",muscle:"Épaules",desc:"Pousse au-dessus de la tête avec trajectoire contrôlée.",img:IMGS.chestpress},{id:"s1j3a3",nom:"Farmer Walk avec haltères",icone:"🧳",duree:"4 allers-retours",muscle:"Grip / gainage",desc:"Marche lentement avec deux haltères lourds, épaules basses et abdos serrés.",img:IMGS.row},{id:"s1j3a4",nom:"Planche sur tapis",icone:"🧱",duree:"3×30 sec",muscle:"Abdos / stabilité",desc:"Dans la zone étirement, corps aligné sans creuser le bas du dos.",img:IMGS.row}]}]},{semaine:2,focus:"Adaptation",jours:[{jour:"Lundi",titre:"Push + jambes",objectif:"Commencer à changer les angles de travail.",activites:[{id:"s2j1a1",nom:"Hack Squat ou presse inclinée",icone:"🦵",duree:"3×10",muscle:"Quadriceps",desc:"Travaille en amplitude contrôlée et garde les talons au sol.",img:IMGS.legpress},{id:"s2j1a2",nom:"Incline Chest Press machine",icone:"🏋️",duree:"3×10",muscle:"Haut des pectoraux",desc:"Pousse en gardant les épaules basses.",img:IMGS.chestpress},{id:"s2j1a3",nom:"Élévations latérales haltères",icone:"🪽",duree:"3×15",muscle:"Épaules latérales",desc:"Monte les haltères à hauteur d'épaules sans élan.",img:IMGS.chestpress},{id:"s2j1a4",nom:"Elliptique",icone:"🥾",duree:"14 min",muscle:"Cardio",desc:"Cadence souple et continue.",img:IMGS.bike}]},{jour:"Mercredi",titre:"Tirage + chaîne postérieure",objectif:"Utiliser davantage la zone poids libres.",activites:[{id:"s2j2a1",nom:"Romanian Deadlift avec haltères",icone:"🏋️‍♂️",duree:"3×10",muscle:"Ischios / fessiers",desc:"Hanches vers l'arrière, dos neutre, haltères près des jambes.",img:IMGS.legcurl},{id:"s2j2a2",nom:"Tirage horizontal convergent",icone:"🚣",duree:"3×12",muscle:"Dos",desc:"Serre les omoplates en fin de tirage.",img:IMGS.row},{id:"s2j2a3",nom:"Curl haltères alterné",icone:"💪",duree:"3×12",muscle:"Biceps",desc:"Monte sans balancer les épaules.",img:IMGS.row},{id:"s2j2a4",nom:"Rameur",icone:"🚣",duree:"10 min",muscle:"Cardio complet",desc:"Pousse d'abord avec les jambes puis tire avec les bras.",img:IMGS.row}]},{jour:"Vendredi",titre:"Full body dynamique",objectif:"Introduire des mouvements fonctionnels Basic-Fit.",activites:[{id:"s2j3a1",nom:"Fentes marchées avec haltères",icone:"🚶",duree:"3×10/jambe",muscle:"Cuisses / fessiers",desc:"Grand pas, genou arrière proche du sol, buste droit.",img:IMGS.legpress},{id:"s2j3a2",nom:"Pec Deck",icone:"🕊️",duree:"3×12",muscle:"Pectoraux",desc:"Ferme les bras en gardant les coudes légèrement fléchis.",img:IMGS.chestpress},{id:"s2j3a3",nom:"Kettlebell Deadlift",icone:"⚙️",duree:"3×12",muscle:"Chaîne postérieure",desc:"Hinge de hanches simple et propre dans la zone fonctionnelle.",img:IMGS.legcurl},{id:"s2j3a4",nom:"Crunch sur swiss ball",icone:"🎯",duree:"3×15",muscle:"Abdos",desc:"Monte le buste sans tirer sur la nuque.",img:IMGS.row}]}]},{semaine:3,focus:"Base solide",jours:[{jour:"Lundi",titre:"Machines poitrine / jambes",objectif:"Renforcer la routine sur les bases.",activites:[{id:"s3j1a1",nom:"Leg Extension",icone:"🦵",duree:"3×12",muscle:"Quadriceps",desc:"Monte fort, redescends lentement.",img:IMGS.legpress},{id:"s3j1a2",nom:"Chest Press convergente",icone:"🏋️",duree:"4×10",muscle:"Pectoraux",desc:"Pousse sans décoller le dos du dossier.",img:IMGS.chestpress},{id:"s3j1a3",nom:"Développé incliné haltères",icone:"🏋️‍♂️",duree:"3×10",muscle:"Haut des pectoraux",desc:"Contrôle total de la descente.",img:IMGS.chestpress},{id:"s3j1a4",nom:"Tapis incliné",icone:"🔥",duree:"15 min",muscle:"Cardio",desc:"Inclinaison modérée pour finir fort.",img:IMGS.treadmill}]},{jour:"Mercredi",titre:"Dos / biceps",objectif:"Tirer sous plusieurs angles.",activites:[{id:"s3j2a1",nom:"Lat Pulldown prise neutre",icone:"⬇️",duree:"4×10",muscle:"Grand dorsal",desc:"Trajectoire verticale propre et sans élan.",img:IMGS.latpulldown},{id:"s3j2a2",nom:"Rowing haltère un bras",icone:"🧲",duree:"3×10/bras",muscle:"Dos / gainage",desc:"Appui sur banc, tire le coude vers la hanche.",img:IMGS.row},{id:"s3j2a3",nom:"Face Pull à la poulie",icone:"🎯",duree:"3×15",muscle:"Arrière d'épaule",desc:"Tire vers le visage en ouvrant les coudes.",img:IMGS.row},{id:"s3j2a4",nom:"Vélo",icone:"🚴",duree:"15 min",muscle:"Cardio",desc:"Travail doux et régulier.",img:IMGS.bike}]},{jour:"Vendredi",titre:"Jambes / épaules / fonctionnel",objectif:"Séance plus variée par zones.",activites:[{id:"s3j3a1",nom:"Barbell Box Squat",icone:"🏋️",duree:"4×8",muscle:"Cuisses / fessiers",desc:"Dans la zone fonctionnelle ou poids libres, assieds-toi brièvement sur la box puis remonte fort.",img:IMGS.legpress},{id:"s3j3a2",nom:"Shoulder Press haltères assis",icone:"💪",duree:"3×10",muscle:"Épaules",desc:"Monte verticalement sans cambrer.",img:IMGS.chestpress},{id:"s3j3a3",nom:"Abductor machine",icone:"🦿",duree:"3×15",muscle:"Fessiers moyens",desc:"Ouvre les jambes lentement et garde une seconde en fin d'amplitude.",img:IMGS.legcurl},{id:"s3j3a4",nom:"Battle rope ou corde ondulatoire",icone:"〰️",duree:"6×20 sec",muscle:"Cardio / bras",desc:"Ondes puissantes et gainage serré dans la zone fonctionnelle.",img:IMGS.row}]}]},{semaine:4,focus:"Montée 1",jours:[{jour:"Lundi",titre:"Push plus dense",objectif:"Monter progressivement le volume.",activites:[{id:"s4j1a1",nom:"Presse à jambes",icone:"🦵",duree:"4×10",muscle:"Quadriceps / fessiers",desc:"Charge un peu plus lourde que semaine 1.",img:IMGS.legpress},{id:"s4j1a2",nom:"Développé couché barre guidée",icone:"🏋️",duree:"4×8",muscle:"Pectoraux / triceps",desc:"Trajectoire stable et amplitude complète.",img:IMGS.chestpress},{id:"s4j1a3",nom:"Pompes inclinées",icone:"🤸",duree:"3×max propre",muscle:"Pectoraux",desc:"Sur banc ou support pour garder une belle forme.",img:IMGS.chestpress},{id:"s4j1a4",nom:"Tapis fractionné léger",icone:"🏃",duree:"10 min",muscle:"Cardio",desc:"30 sec rapide / 60 sec lent.",img:IMGS.treadmill}]},{jour:"Mercredi",titre:"Pull + free weight",objectif:"Travailler dos et arrière de chaîne.",activites:[{id:"s4j2a1",nom:"Soulevé de terre kettlebell",icone:"⚙️",duree:"4×10",muscle:"Fessiers / ischios",desc:"Version simple et sécurisante pour apprendre le hinge.",img:IMGS.legcurl},{id:"s4j2a2",nom:"Low Row machine",icone:"🚣",duree:"4×10",muscle:"Dos milieu",desc:"Ramène vers le nombril avec buste fixe.",img:IMGS.row},{id:"s4j2a3",nom:"Curl barre EZ",icone:"💪",duree:"3×12",muscle:"Biceps",desc:"Coudes près du corps et montée contrôlée.",img:IMGS.row},{id:"s4j2a4",nom:"Rameur cardio",icone:"🚣",duree:"12 min",muscle:"Cardio",desc:"Cadence régulière et technique propre.",img:IMGS.row}]},{jour:"Vendredi",titre:"Full body Basic-Fit zones",objectif:"Passer de zone en zone pour une séance ludique.",activites:[{id:"s4j3a1",nom:"Step-up avec haltères",icone:"🪜",duree:"3×10/jambe",muscle:"Jambes / fessiers",desc:"Monte sur box ou banc en poussant fort dans le talon.",img:IMGS.legpress},{id:"s4j3a2",nom:"Poulie triceps corde",icone:"🪢",duree:"3×12",muscle:"Triceps",desc:"Étends complètement les bras en fin de mouvement.",img:IMGS.chestpress},{id:"s4j3a3",nom:"Medicine Ball Slams",icone:"💥",duree:"4×12",muscle:"Explosivité / gainage",desc:"Dans la zone fonctionnelle, monte haut puis claque la balle au sol.",img:IMGS.row},{id:"s4j3a4",nom:"Crunch machine ou tapis",icone:"🎯",duree:"3×15",muscle:"Abdos",desc:"Garde un mouvement court et contrôlé.",img:IMGS.row}]}]},{semaine:5,focus:"Montée 2",jours:[{jour:"Lundi",titre:"Push lourd modéré",objectif:"Plus de charge, moins de répétitions.",activites:[{id:"s5j1a1",nom:"Hack Squat",icone:"🦵",duree:"4×8",muscle:"Quadriceps",desc:"Garde le dos bien collé au support.",img:IMGS.legpress},{id:"s5j1a2",nom:"Incline Chest Press",icone:"🏋️",duree:"4×8",muscle:"Pectoraux",desc:"Pousse fort et garde le contrôle à la descente.",img:IMGS.chestpress},{id:"s5j1a3",nom:"Développé épaules haltères",icone:"💪",duree:"3×8",muscle:"Épaules",desc:"Assis sur banc, monte verticalement.",img:IMGS.chestpress},{id:"s5j1a4",nom:"Bike sprint",icone:"🚴",duree:"8 min",muscle:"Cardio",desc:"20 sec fort / 40 sec facile.",img:IMGS.bike}]},{jour:"Mercredi",titre:"Pull lourd",objectif:"Dos, biceps et hanche arrière.",activites:[{id:"s5j2a1",nom:"Romanian Deadlift barre",icone:"🏋️‍♂️",duree:"4×8",muscle:"Ischios / fessiers",desc:"Barre proche des cuisses, dos neutre du début à la fin.",img:IMGS.legcurl},{id:"s5j2a2",nom:"Lat Pulldown large",icone:"⬇️",duree:"4×8",muscle:"Dos large",desc:"Tire sous le menton avec poitrine ouverte.",img:IMGS.latpulldown},{id:"s5j2a3",nom:"Rowing poitrine appuyée",icone:"🧲",duree:"3×10",muscle:"Dos milieu",desc:"Banc incliné pour enlever l'élan.",img:IMGS.row},{id:"s5j2a4",nom:"Farmer Carry",icone:"🧳",duree:"5 allers-retours",muscle:"Grip / tronc",desc:"Prends plus lourd que semaine 1 si possible.",img:IMGS.row}]},{jour:"Vendredi",titre:"Mix machine + fonctionnel",objectif:"Séance variée et complète.",activites:[{id:"s5j3a1",nom:"Leg Curl allongé",icone:"🦿",duree:"4×10",muscle:"Ischios",desc:"Bloque les hanches et contracte fort.",img:IMGS.legcurl},{id:"s5j3a2",nom:"Dips assistés",icone:"🔻",duree:"3×8",muscle:"Triceps / pectoraux",desc:"Descends proprement sans douleur d'épaule.",img:IMGS.chestpress},{id:"s5j3a3",nom:"Kettlebell Swing",icone:"⚡",duree:"4×15",muscle:"Hanche / cardio",desc:"Utilise la poussée de hanches, pas les bras.",img:IMGS.legcurl},{id:"s5j3a4",nom:"Gainage latéral",icone:"🧱",duree:"3×30 sec/côté",muscle:"Obliques",desc:"Corps aligné et bassin haut.",img:IMGS.row}]}]},{semaine:6,focus:"Volume",jours:[{jour:"Lundi",titre:"Poitrine / jambes / cardio",objectif:"Séance plus longue mais toujours propre.",activites:[{id:"s6j1a1",nom:"Leg Press unilatérale",icone:"🦵",duree:"3×10/jambe",muscle:"Quadriceps / stabilité",desc:"Travaille une jambe à la fois pour corriger l'équilibre.",img:IMGS.legpress},{id:"s6j1a2",nom:"Pec Deck",icone:"🕊️",duree:"4×12",muscle:"Pectoraux",desc:"Ferme lentement puis ouvre en contrôlant.",img:IMGS.chestpress},{id:"s6j1a3",nom:"Pompes sur banc",icone:"🤸",duree:"3×max propre",muscle:"Pectoraux / triceps",desc:"Reste gainé du début à la fin.",img:IMGS.chestpress},{id:"s6j1a4",nom:"Tapis rapide",icone:"🏃",duree:"15 min",muscle:"Cardio",desc:"Cadence soutenue mais tenable.",img:IMGS.treadmill}]},{jour:"Mercredi",titre:"Dos / free weights",objectif:"Mélange machine, poulie et haltères.",activites:[{id:"s6j2a1",nom:"T-Bar Row ou rowing barre",icone:"🚣",duree:"4×8",muscle:"Dos",desc:"Tire avec les coudes, pas avec les mains.",img:IMGS.row},{id:"s6j2a2",nom:"Lat Pulldown prise serrée",icone:"⬇️",duree:"3×10",muscle:"Grand dorsal",desc:"Amplitude complète et buste stable.",img:IMGS.latpulldown},{id:"s6j2a3",nom:"Curl marteau haltères",icone:"🔨",duree:"3×12",muscle:"Biceps / avant-bras",desc:"Paumes face à face tout au long du mouvement.",img:IMGS.row},{id:"s6j2a4",nom:"Rameur tempo",icone:"🚣",duree:"12 min",muscle:"Cardio",desc:"Effort fluide, accent sur la technique.",img:IMGS.row}]},{jour:"Vendredi",titre:"Lower + shoulders",objectif:"Accent jambes et épaules sans routine monotone.",activites:[{id:"s6j3a1",nom:"Bulgarian Split Squat haltères",icone:"🦿",duree:"3×10/jambe",muscle:"Cuisses / fessiers",desc:"Pied arrière sur banc, descente lente.",img:IMGS.legpress},{id:"s6j3a2",nom:"Machine épaules convergente",icone:"💪",duree:"4×10",muscle:"Épaules",desc:"Pousse verticalement avec appui dorsal.",img:IMGS.chestpress},{id:"s6j3a3",nom:"Cable Wood Chop",icone:"🌪️",duree:"3×12/côté",muscle:"Obliques",desc:"Rotation contrôlée depuis le tronc.",img:IMGS.row},{id:"s6j3a4",nom:"Marche inclinée",icone:"🚶",duree:"15 min",muscle:"Cardio",desc:"Marche sportive pour finir sans trop d'impact.",img:IMGS.treadmill}]}]},{semaine:7,focus:"Deload",jours:[{jour:"Lundi",titre:"Réduction de volume",objectif:"Récupérer sans perdre le rythme.",activites:[{id:"s7j1a1",nom:"Leg Press légère",icone:"🦵",duree:"2×12",muscle:"Quadriceps",desc:"Charge légère, mouvement impeccable.",img:IMGS.legpress},{id:"s7j1a2",nom:"Chest Press légère",icone:"🏋️",duree:"2×12",muscle:"Pectoraux",desc:"Travail technique sans forcer.",img:IMGS.chestpress},{id:"s7j1a3",nom:"Marche inclinée",icone:"🚶",duree:"12 min",muscle:"Cardio",desc:"Rythme confortable.",img:IMGS.treadmill}]},{jour:"Mercredi",titre:"Dos doux + mobilité",objectif:"Bouger sans fatigue excessive.",activites:[{id:"s7j2a1",nom:"Lat Pulldown léger",icone:"⬇️",duree:"2×12",muscle:"Dos",desc:"Ampleur propre et tempo lent.",img:IMGS.latpulldown},{id:"s7j2a2",nom:"Rowing assis léger",icone:"🚣",duree:"2×12",muscle:"Dos",desc:"Fin de tirage contrôlée.",img:IMGS.row},{id:"s7j2a3",nom:"Étirements + foam roller",icone:"🧘",duree:"10 min",muscle:"Mobilité",desc:"Zone étirement : relâche les jambes et le dos.",img:IMGS.row}]},{jour:"Vendredi",titre:"Circuit léger",objectif:"Entretenir tout le corps.",activites:[{id:"s7j3a1",nom:"Goblet Squat léger",icone:"🏋️",duree:"2×12",muscle:"Jambes",desc:"Charge facile et respiration fluide.",img:IMGS.legpress},{id:"s7j3a2",nom:"Shoulder Press légère",icone:"💪",duree:"2×12",muscle:"Épaules",desc:"Mouvement souple sans chercher l'échec.",img:IMGS.chestpress},{id:"s7j3a3",nom:"Planche",icone:"🧱",duree:"2×30 sec",muscle:"Core",desc:"Gainage simple et propre.",img:IMGS.row}]}]},{semaine:8,focus:"Relance",jours:[{jour:"Lundi",titre:"Push relancé",objectif:"Repartir plus fort après la récupération.",activites:[{id:"s8j1a1",nom:"Hack Squat",icone:"🦵",duree:"4×8",muscle:"Quadriceps",desc:"Remets de l'intensité progressivement.",img:IMGS.legpress},{id:"s8j1a2",nom:"Développé couché haltères",icone:"🏋️‍♂️",duree:"4×8",muscle:"Pectoraux",desc:"Choisis une charge stable et symétrique.",img:IMGS.chestpress},{id:"s8j1a3",nom:"Élévations latérales câble ou haltères",icone:"🪽",duree:"3×15",muscle:"Épaules",desc:"Travail propre pour le deltoïde moyen.",img:IMGS.chestpress},{id:"s8j1a4",nom:"Bike intervalles",icone:"🚴",duree:"10 min",muscle:"Cardio",desc:"20 sec fort / 40 sec calme.",img:IMGS.bike}]},{jour:"Mercredi",titre:"Pull solide",objectif:"Free weight + machines complémentaires.",activites:[{id:"s8j2a1",nom:"Deadlift trap bar ou barre légère",icone:"🏋️",duree:"4×6",muscle:"Chaîne postérieure",desc:"Si disponible, privilégie la trap bar pour une position plus simple.",img:IMGS.legcurl},{id:"s8j2a2",nom:"Lat Pulldown unilatéral",icone:"⬇️",duree:"3×10/bras",muscle:"Dos",desc:"Travail côté par côté pour mieux sentir le dorsal.",img:IMGS.latpulldown},{id:"s8j2a3",nom:"Rowing assis neutre",icone:"🚣",duree:"3×10",muscle:"Dos milieu",desc:"Serrage des omoplates en fin de tirage.",img:IMGS.row},{id:"s8j2a4",nom:"Curl incliné haltères",icone:"💪",duree:"3×12",muscle:"Biceps",desc:"Bras légèrement en arrière pour plus d'étirement.",img:IMGS.row}]},{jour:"Vendredi",titre:"Fonctionnel athlétique",objectif:"Séance fun inspirée des training zones.",activites:[{id:"s8j3a1",nom:"Walking Lunges",icone:"🚶",duree:"3×12/jambe",muscle:"Jambes / fessiers",desc:"Utilise la zone fonctionnelle et garde une belle posture.",img:IMGS.legpress},{id:"s8j3a2",nom:"Push Press haltères léger",icone:"⚡",duree:"3×8",muscle:"Épaules / puissance",desc:"Petite impulsion des jambes puis poussée verticale.",img:IMGS.chestpress},{id:"s8j3a3",nom:"Box Step-up rapide",icone:"🪜",duree:"3×12/jambe",muscle:"Cardio jambes",desc:"Monte et redescends avec contrôle.",img:IMGS.legpress},{id:"s8j3a4",nom:"Ab wheel ou rollout swiss ball",icone:"🎯",duree:"3×10",muscle:"Core",desc:"Gaine fort pour éviter de creuser le bas du dos.",img:IMGS.row}]}]},{semaine:9,focus:"Intensification",jours:[{jour:"Lundi",titre:"Push lourd 2",objectif:"Pousser plus fort sur les bases.",activites:[{id:"s9j1a1",nom:"Presse à jambes lourde",icone:"🦵",duree:"4×8",muscle:"Quadriceps",desc:"Charge plus élevée, amplitude contrôlée.",img:IMGS.legpress},{id:"s9j1a2",nom:"Chest Press lourde",icone:"🏋️",duree:"4×8",muscle:"Pectoraux",desc:"Pousse fort sans perdre la trajectoire.",img:IMGS.chestpress},{id:"s9j1a3",nom:"Dips assistés ou bench dips",icone:"🔻",duree:"3×10",muscle:"Triceps",desc:"Choisis la version sans douleur aux épaules.",img:IMGS.chestpress},{id:"s9j1a4",nom:"Tapis fractionné",icone:"🏃",duree:"12 min",muscle:"Cardio",desc:"30 sec rapide / 60 sec lent.",img:IMGS.treadmill}]},{jour:"Mercredi",titre:"Pull / biceps / posterior",objectif:"Renforcer le dos sous plusieurs axes.",activites:[{id:"s9j2a1",nom:"Romanian Deadlift haltères lourds",icone:"🏋️‍♂️",duree:"4×8",muscle:"Ischios / fessiers",desc:"Charge supérieure à la semaine 2.",img:IMGS.legcurl},{id:"s9j2a2",nom:"Low Row serré",icone:"🚣",duree:"4×8",muscle:"Dos",desc:"Ramène les poignées bas vers le ventre.",img:IMGS.row},{id:"s9j2a3",nom:"Curl barre EZ",icone:"💪",duree:"4×10",muscle:"Biceps",desc:"Contrôle total du mouvement.",img:IMGS.row},{id:"s9j2a4",nom:"Rameur",icone:"🚣",duree:"10 min",muscle:"Cardio",desc:"Effort plus dense que d'habitude.",img:IMGS.row}]},{jour:"Vendredi",titre:"Mix jambes / tronc / shoulders",objectif:"Faire tourner les zones sur une même séance.",activites:[{id:"s9j3a1",nom:"Bulgarian Split Squat",icone:"🦿",duree:"4×8/jambe",muscle:"Jambes / fessiers",desc:"Stabilité et force unilatérale.",img:IMGS.legpress},{id:"s9j3a2",nom:"Shoulder Press machine",icone:"💪",duree:"4×8",muscle:"Épaules",desc:"Pousse lourd mais propre.",img:IMGS.chestpress},{id:"s9j3a3",nom:"Cable Pallof Press",icone:"🛡️",duree:"3×12/côté",muscle:"Gainage anti-rotation",desc:"Tiens la poulie devant toi sans tourner le buste.",img:IMGS.row},{id:"s9j3a4",nom:"Sled push ou marche rapide inclinée",icone:"🚛",duree:"6×20 m ou 10 min",muscle:"Cardio / jambes",desc:"Si le matériel n'est pas disponible, remplace par tapis incliné.",img:IMGS.treadmill}]}]},{semaine:10,focus:"Deload 2",jours:[{jour:"Lundi",titre:"Technique machines",objectif:"Reposer le système nerveux.",activites:[{id:"s10j1a1",nom:"Leg Press légère",icone:"🦵",duree:"2×10",muscle:"Jambes",desc:"Mouvement parfait, charge réduite.",img:IMGS.legpress},{id:"s10j1a2",nom:"Chest Press légère",icone:"🏋️",duree:"2×10",muscle:"Pectoraux",desc:"Pas d'échec, juste de la qualité.",img:IMGS.chestpress},{id:"s10j1a3",nom:"Elliptique",icone:"🥾",duree:"12 min",muscle:"Cardio",desc:"Effort facile et fluide.",img:IMGS.bike}]},{jour:"Mercredi",titre:"Tirage léger",objectif:"Conserver la technique et la mobilité.",activites:[{id:"s10j2a1",nom:"Lat Pulldown léger",icone:"⬇️",duree:"2×10",muscle:"Dos",desc:"Amplitude complète et épaules basses.",img:IMGS.latpulldown},{id:"s10j2a2",nom:"Rowing assis léger",icone:"🚣",duree:"2×10",muscle:"Dos",desc:"Tirage propre sans élan.",img:IMGS.row},{id:"s10j2a3",nom:"Mobility flow",icone:"🧘",duree:"10 min",muscle:"Mobilité",desc:"Hanches, thorax, chevilles et épaules.",img:IMGS.row}]},{jour:"Vendredi",titre:"Circuit de récupération",objectif:"Finir frais, pas détruit.",activites:[{id:"s10j3a1",nom:"Goblet Squat léger",icone:"🏋️",duree:"2×12",muscle:"Jambes",desc:"Facile et fluide.",img:IMGS.legpress},{id:"s10j3a2",nom:"Pompes inclinées",icone:"🤸",duree:"2×12",muscle:"Pectoraux",desc:"Version simple et bien contrôlée.",img:IMGS.chestpress},{id:"s10j3a3",nom:"Gainage frontal",icone:"🧱",duree:"2×30 sec",muscle:"Core",desc:"Respiration calme et ventre serré.",img:IMGS.row}]}]},{semaine:11,focus:"Final build",jours:[{jour:"Lundi",titre:"Machines + haltères lourds",objectif:"Dernière vraie montée de charge.",activites:[{id:"s11j1a1",nom:"Hack Squat ou presse lourde",icone:"🦵",duree:"4×6-8",muscle:"Quadriceps",desc:"Travaille lourd avec bon contrôle.",img:IMGS.legpress},{id:"s11j1a2",nom:"Développé couché haltères",icone:"🏋️‍♂️",duree:"4×6-8",muscle:"Pectoraux",desc:"Monte en charge tout en gardant l'amplitude.",img:IMGS.chestpress},{id:"s11j1a3",nom:"Élévations latérales",icone:"🪽",duree:"3×15",muscle:"Épaules",desc:"Finis l'épaule avec une tension continue.",img:IMGS.chestpress},{id:"s11j1a4",nom:"Tapis incliné rapide",icone:"🔥",duree:"12 min",muscle:"Cardio",desc:"Marche sportive ou jogging léger.",img:IMGS.treadmill}]},{jour:"Mercredi",titre:"Pull final",objectif:"Consolider le dos et la posture.",activites:[{id:"s11j2a1",nom:"Deadlift trap bar",icone:"🏋️",duree:"4×6",muscle:"Chaîne postérieure",desc:"Concentre-toi sur un mouvement fort et propre.",img:IMGS.legcurl},{id:"s11j2a2",nom:"Lat Pulldown lourd",icone:"⬇️",duree:"4×8",muscle:"Dos",desc:"Descends jusqu'au haut des pectoraux.",img:IMGS.latpulldown},{id:"s11j2a3",nom:"Rowing haltère lourd",icone:"🧲",duree:"3×8/bras",muscle:"Dos / gainage",desc:"Banc stable et coude vers la hanche.",img:IMGS.row},{id:"s11j2a4",nom:"Curl marteau",icone:"🔨",duree:"3×10",muscle:"Biceps",desc:"Sans balancer le corps.",img:IMGS.row}]},{jour:"Vendredi",titre:"Fonctionnel fort",objectif:"Séance moderne inspirée des training zones.",activites:[{id:"s11j3a1",nom:"Walking Lunges haltères",icone:"🚶",duree:"4×10/jambe",muscle:"Cuisses / fessiers",desc:"Avance proprement avec le tronc haut.",img:IMGS.legpress},{id:"s11j3a2",nom:"Push Press haltères",icone:"⚡",duree:"4×6",muscle:"Puissance épaules",desc:"Petite impulsion puis verrouillage fort en haut.",img:IMGS.chestpress},{id:"s11j3a3",nom:"Battle Rope",icone:"〰️",duree:"8×20 sec",muscle:"Conditioning",desc:"Gaine et envoie des vagues puissantes.",img:IMGS.row},{id:"s11j3a4",nom:"Plank avec shoulder taps",icone:"🎯",duree:"3×20 taps",muscle:"Core",desc:"Garde le bassin stable.",img:IMGS.row}]}]},{semaine:12,focus:"Bilan",jours:[{jour:"Lundi",titre:"Séance repère push/jambes",objectif:"Comparer tes sensations avec le début du programme.",activites:[{id:"s12j1a1",nom:"Leg Press",icone:"🦵",duree:"3×10",muscle:"Quadriceps",desc:"Choisis une charge que tu maîtrises nettement mieux qu'en semaine 1.",img:IMGS.legpress},{id:"s12j1a2",nom:"Chest Press",icone:"🏋️",duree:"3×10",muscle:"Pectoraux",desc:"Note ton poids utilisé et la qualité du mouvement.",img:IMGS.chestpress},{id:"s12j1a3",nom:"Développé haltères",icone:"🏋️‍♂️",duree:"3×10",muscle:"Pectoraux / épaules",desc:"Compare stabilité et facilité avec les premières semaines.",img:IMGS.chestpress},{id:"s12j1a4",nom:"Tapis libre",icone:"🏃",duree:"12 min",muscle:"Cardio",desc:"Choisis le rythme et observe ton souffle.",img:IMGS.treadmill}]},{jour:"Mercredi",titre:"Séance repère dos",objectif:"Mesurer les progrès en tirage et contrôle.",activites:[{id:"s12j2a1",nom:"Lat Pulldown",icone:"⬇️",duree:"3×10",muscle:"Dos",desc:"Même logique : charge contrôlée et belle amplitude.",img:IMGS.latpulldown},{id:"s12j2a2",nom:"Rowing assis",icone:"🚣",duree:"3×10",muscle:"Dos",desc:"Note ta connexion musculaire et la posture.",img:IMGS.row},{id:"s12j2a3",nom:"Romanian Deadlift haltères",icone:"🏋️",duree:"3×10",muscle:"Ischios / fessiers",desc:"Observe l'amélioration technique du hinge.",img:IMGS.legcurl},{id:"s12j2a4",nom:"Vélo",icone:"🚴",duree:"10 min",muscle:"Cardio",desc:"Retour au calme contrôlé.",img:IMGS.bike}]},{jour:"Vendredi",titre:"Séance libre guidée",objectif:"Finir sur une séance variée et motivante.",activites:[{id:"s12j3a1",nom:"Farmer Walk",icone:"🧳",duree:"4 allers-retours",muscle:"Grip / gainage",desc:"Choisis une charge de fin de cycle.",img:IMGS.row},{id:"s12j3a2",nom:"Kettlebell Swing",icone:"⚡",duree:"3×15",muscle:"Puissance hanche",desc:"Explosif et propre.",img:IMGS.legcurl},{id:"s12j3a3",nom:"Pompes ou dips assistés",icone:"🤸",duree:"3×max propre",muscle:"Push",desc:"Termine sur un mouvement poids du corps.",img:IMGS.chestpress},{id:"s12j3a4",nom:"Mobility + stretching",icone:"🧘",duree:"12 min",muscle:"Récupération",desc:"Étirements guidés, respiration et décompression.",img:IMGS.row}]}]}];
+function showPage(p){document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));document.getElementById('page-'+p).classList.add('active');document.getElementById('tab-'+p).classList.add('active');if(p==='repas')renderMeals();if(p==='poids')renderPoids();if(p==='historique')renderHist();if(p==='seance')renderSeance();if(p==='planning')renderPlanning();}
+function allActs(){return PROGRAMME.flatMap(s=>s.jours.flatMap(j=>j.activites));}
+function findAct(id){return allActs().find(a=>a.id===id);}
+
+// ══════════════════════════════════════════
+// PROGRAMME
+// ══════════════════════════════════════════
+const isWeekDone=wi=>PROGRAMME[wi].jours.every((_,di)=>isDayDone(wi,di));
+const isDayDone=(wi,di)=>PROGRAMME[wi].jours[di].activites.every(a=>S.done[a.id]?.done);
+
+function renderProg(){
+  const ws=document.getElementById('week-sel');ws.innerHTML='';
+  PROGRAMME.forEach((sem,i)=>{const btn=document.createElement('button');btn.className='wtab'+(i===S.week?' active':'');const wd=isWeekDone(i);if(wd)btn.classList.add('wdone');btn.textContent=(wd?'✓ ':'')+'S'+sem.num;btn.title=sem.label;btn.onclick=()=>{S.week=i;S.day=0;renderProg();};ws.appendChild(btn);});
+  const sem=PROGRAMME[S.week];const ds=document.getElementById('day-sel');ds.innerHTML='';
+  sem.jours.forEach((j,i)=>{const btn=document.createElement('button');btn.className='dtab'+(i===S.day?' active':'');const dd=isDayDone(S.week,i);if(dd)btn.classList.add('ddone');btn.textContent=(dd?'✓ ':'')+j.label;btn.onclick=()=>{S.day=i;renderProg();};ds.appendChild(btn);});
+  renderDay(S.week,S.day);
+}
+
+function renderDay(wi,di){
+  const jour=PROGRAMME[wi].jours[di];const sem=PROGRAMME[wi];
+  const total=jour.activites.length;const nd=jour.activites.filter(a=>S.done[a.id]?.done).length;const pct=Math.round(nd/total*100);const done=pct===100;
+  let h=`<div class="card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.25rem">
+      <div><h2 style="font-family:var(--ff-d);font-size:var(--tx-lg);margin-bottom:.5rem">${jour.label} — ${sem.label}</h2>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap"><span class="badge badge-o">${jour.type==='cardio'?'🚴 Cardio':'💪 Full Body'}</span><span class="badge badge-s">${nd}/${total} faites</span></div></div>
+      ${!done?`<button class="btn btn-primary" onclick="startSeance(${wi},${di})">▶ Démarrer la séance</button>`:`<span class="badge badge-s" style="font-size:var(--tx-sm);padding:.5rem 1rem">🎉 Terminée !</span>`}
+    </div>
+    <div class="prog-wrap" style="margin-bottom:1.5rem"><div class="prog-fill${done?' done':''}" style="width:${pct}%"></div></div>
+    <div style="display:flex;flex-direction:column;gap:.75rem">`;
+  jour.activites.forEach(a=>{
+    const as=S.done[a.id]||{};const isDone=as.done;const img=imgFor(a.nom);
+    h+=`<div class="act-card${isDone?' completed':''}">
+      <div class="act-hd">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:var(--tx-base)">${a.icone} ${a.nom}</div>
+          <div style="font-size:var(--tx-xs);color:var(--muted);margin-top:.1rem">${a.type==='muscu'?`${a.series} séries × ${a.reps} reps · repos ${fmt(a.repos)} · <strong>${a.charge}</strong>`:`Durée : ${fmt(a.duree)}`}</div>
+          ${a.muscles?`<span class="tag-muscle">🎯 ${a.muscles}</span>`:''}
+          <div class="machine-block"><img class="machine-img" src="${img}" alt="${a.nom}" loading="lazy" onerror="this.style.display='none'"><div class="machine-desc">${a.detail}</div></div>
+          ${as.charge?`<div style="margin-top:.5rem"><span class="badge badge-p">⚖️ Ma charge : ${as.charge}</span></div>`:''}
+          ${as.note?`<div style="font-size:var(--tx-xs);color:var(--muted);font-style:italic;margin-top:.25rem">"${as.note}"</div>`:''}
+        </div>
+        <div class="check-c${isDone?' done':''}">${isDone?'✓':''}</div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem">
+        <button class="btn btn-ghost" style="font-size:var(--tx-xs)" onclick="openNote('${a.id}')">📝 Notes & charges</button>
+        ${!isDone?`<button class="btn btn-success" style="font-size:var(--tx-xs)" onclick="completeAct('${a.id}')">✓ Valider</button>`:''}
+      </div>
+    </div>`;
+  });
+  h+=`</div></div>`;document.getElementById('day-content').innerHTML=h;
+}
+
+function completeAct(id){if(!S.done[id])S.done[id]={};S.done[id].done=true;S.done[id].ts=new Date().toISOString();toast('✓ Activité validée !');renderProg();if(S.seance)renderSeance();}
+function startSeance(wi,di){S.seance={wi,di};showPage('seance');}
+
+// ══════════════════════════════════════════
+// SÉANCE
+// ══════════════════════════════════════════
+function renderSeance(){
+  const c=document.getElementById('seance-content');
+  if(!S.seance){c.innerHTML=`<div class="card" style="text-align:center;padding:3rem"><p style="color:var(--muted);margin-bottom:1rem">Aucune séance démarrée.</p><button class="btn btn-primary" onclick="showPage('programme')">Voir le programme</button></div>`;return;}
+  const{wi,di}=S.seance;const jour=PROGRAMME[wi].jours[di];const sem=PROGRAMME[wi];
+  const nd=jour.activites.filter(a=>S.done[a.id]?.done).length;const total=jour.activites.length;const pct=Math.round(nd/total*100);
+  const ai=jour.activites.findIndex(a=>!S.done[a.id]?.done);
+  let h=`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1rem">
+    <div><h2 style="font-family:var(--ff-d);font-size:var(--tx-lg)">${jour.label} — S${wi+1}</h2><p style="color:var(--muted);font-size:var(--tx-sm)">${nd}/${total} activités</p></div>
+    <button class="btn btn-ghost" onclick="showPage('programme')">← Retour</button>
+  </div><div class="prog-wrap" style="margin-bottom:1.5rem"><div class="prog-fill${pct===100?' done':''}" style="width:${pct}%"></div></div>`;
+  if(pct===100){h+=`<div class="card" style="text-align:center;padding:3rem"><div style="font-size:3rem;margin-bottom:1rem">🎉</div><h3 style="font-family:var(--ff-d);font-size:var(--tx-lg);margin-bottom:.5rem">Séance terminée !</h3><p style="color:var(--muted);margin-bottom:1.5rem">Bravo ! 💪 Pense à noter ton poids.</p><div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap"><button class="btn btn-primary" onclick="showPage('poids')">⚖️ Mon poids</button><button class="btn btn-ghost" onclick="showPage('programme')">Retour</button></div></div>`;c.innerHTML=h;return;}
+  if(ai>=0){
+    const a=jour.activites[ai];const isThis=S.timerAct===a.id;const dur=a.type==='muscu'?a.repos:a.duree;
+    const C=88,R=C/2-7,circ=2*Math.PI*R;const frac=isThis?(1-S.timerLeft/S.timerTotal):0;
+    h+=`<div class="card" style="margin-bottom:1rem;border-color:var(--primary)">
+      <h3 style="font-weight:600;margin-bottom:.5rem">⏱ En cours : ${a.icone} ${a.nom}</h3>
+      ${a.muscles?`<span class="tag-muscle" style="margin-bottom:.75rem;display:inline-block">🎯 ${a.muscles}</span>`:''}
+      <div class="machine-block" style="margin-bottom:1rem"><img class="machine-img" src="${imgFor(a.nom)}" alt="${a.nom}" loading="lazy" onerror="this.style.display='none'"><div class="machine-desc">${a.detail}${a.type==='muscu'?`<br><strong>Charge conseillée : ${a.charge}</strong>`:''}</div></div>
+      <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+        <div class="timer-wrap"><svg width="${C}" height="${C}" viewBox="0 0 ${C} ${C}"><circle cx="${C/2}" cy="${C/2}" r="${R}" stroke="var(--border)" stroke-width="6" fill="none"/><circle cx="${C/2}" cy="${C/2}" r="${R}" stroke="var(--primary)" stroke-width="6" fill="none" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${isThis?(circ*(1-frac)).toFixed(2):circ.toFixed(2)}" id="t-arc" style="stroke-linecap:round;transition:stroke-dashoffset 1s linear"/></svg><div class="timer-inner"><div class="timer-num" id="t-num">${isThis?fmt(S.timerLeft):fmt(dur)}</div><div class="timer-lbl">${a.type==='muscu'?'Repos':'Durée'}</div></div></div>
+        <div style="flex:1;min-width:180px">
+          ${a.type==='muscu'?`<div class="badge badge-o" style="margin-bottom:.75rem">${a.series} × ${a.reps} reps</div>`:''}
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">${!isThis?`<button class="btn btn-primary" onclick="startTimer('${a.id}',${dur})">▶ Démarrer</button>`:`<button class="btn btn-danger" onclick="stopTimer()">⏹ Arrêter</button>`}<button class="btn btn-ghost" onclick="openNote('${a.id}')">📝</button><button class="btn btn-success" onclick="completeAct('${a.id}');stopTimer()">✓ Valider</button></div>
+          ${(S.done[a.id]?.charge||S.done[a.id]?.note)?`<div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">${S.done[a.id]?.charge?`<span class="badge badge-p">⚖️ ${S.done[a.id].charge}</span>`:''} ${S.done[a.id]?.note?`<span style="font-size:var(--tx-xs);color:var(--muted);font-style:italic">"${S.done[a.id].note}"</span>`:''}</div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+  h+=`<div style="display:flex;flex-direction:column;gap:.5rem">`;
+  jour.activites.forEach((a,i)=>{if(i===ai)return;const isDone=S.done[a.id]?.done;h+=`<div class="act-card${isDone?' completed':''}"><div class="act-hd"><div><div style="font-weight:500">${a.icone} ${a.nom}</div><div style="font-size:var(--tx-xs);color:var(--muted)">${a.type==='muscu'?`${a.series}×${a.reps}`:fmt(a.duree)}</div>${S.done[a.id]?.charge?`<span class="badge badge-p" style="margin-top:.3rem">⚖️ ${S.done[a.id].charge}</span>`:''}</div><div class="check-c${isDone?' done':''}">${isDone?'✓':''}</div></div></div>`;});
+  h+=`</div>`;c.innerHTML=h;
+}
+
+// ══════════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════════
+function startTimer(id,sec){stopTimer();S.timerAct=id;S.timerLeft=sec;S.timerTotal=sec;S.timer=setInterval(()=>{S.timerLeft--;updateTimerUI();if(S.timerLeft<=0){stopTimer();const a=findAct(id);if(a?.type==='cardio')completeAct(id);toast('⏰ Chronomètre terminé !');}},1000);renderSeance();}
+function stopTimer(){if(S.timer){clearInterval(S.timer);S.timer=null;}S.timerAct=null;}
+function updateTimerUI(){const n=document.getElementById('t-num');if(n)n.textContent=fmt(S.timerLeft);const arc=document.getElementById('t-arc');if(arc){const C=88,R=C/2-7,circ=2*Math.PI*R;const f=1-S.timerLeft/S.timerTotal;arc.setAttribute('stroke-dashoffset',(circ*(1-f)).toFixed(2));}}
+
+// ══════════════════════════════════════════
+// NOTES
+// ══════════════════════════════════════════
+function openNote(id){S.noteId=id;const a=findAct(id);const prev=S.done[id]||{};document.getElementById('note-modal-info').textContent=a?a.nom:'';document.getElementById('n-charge').value=prev.charge||'';document.getElementById('n-text').value=prev.note||'';document.getElementById('note-modal').classList.remove('hidden');}
+function closeNote(){document.getElementById('note-modal').classList.add('hidden');S.noteId=null;}
+function saveNote(){const id=S.noteId;if(!id)return;if(!S.done[id])S.done[id]={};S.done[id].charge=document.getElementById('n-charge').value;S.done[id].note=document.getElementById('n-text').value;closeNote();toast('📝 Notes enregistrées !');renderProg();if(S.seance)renderSeance();}
+
+// ══════════════════════════════════════════
+// PLANNING
+// ══════════════════════════════════════════
+const DLABELS=['Lun','Mer','Ven'];
+const DMAP={'Lundi':0,'Mercredi':2,'Vendredi':4};
+function renderPlanning(){
+  const el=document.getElementById('planning-grid');
+  let h=`<div class="planning-grid"><div class="pg-hd">Sem.</div>${DLABELS.map(d=>`<div class="pg-hd">${d}</div>`).join('')}`;
+  PROGRAMME.forEach((sem,wi)=>{
+    h+=`<div class="pg-week">S${sem.num}</div>`;
+    const cells=Array(3).fill('');
+    sem.jours.forEach((j,ji)=>{const d=DMAP[j.label]??ji;const done=isDayDone(wi,ji);const isC=j.type==='cardio';cells[d]=`<div class="pg-session ${isC?'pg-cardio':'pg-full'}" onclick="goToDay(${wi},${ji})" title="${sem.label} · ${j.label}">${done?'✓ ':''} ${isC?'🚴':'💪'}</div>`;});
+    DLABELS.forEach((_,d)=>{h+=`<div class="pg-cell">${cells[d]||'<div class="pg-rest">—</div>'}</div>`;});
+  });
+  h+=`</div>`;el.innerHTML=h;
+}
+function goToDay(wi,di){S.week=wi;S.day=di;renderProg();showPage('programme');}
+
+// ══════════════════════════════════════════
+// POIDS
+// ══════════════════════════════════════════
+function renderPoids(){document.getElementById('w-date').valueAsDate=new Date();renderWeightStats();renderWeightChart();renderWeightList();}
+function addWeight(){const w=parseFloat(document.getElementById('w-input').value);const d=document.getElementById('w-date').value;const n=document.getElementById('w-note').value;if(!w||isNaN(w)){toast('⚠️ Poids invalide');return;}if(!d){toast('⚠️ Date requise');return;}S.weights=S.weights.filter(x=>x.date!==d);S.weights.push({date:d,weight:w,note:n});S.weights.sort((a,b)=>a.date.localeCompare(b.date));document.getElementById('w-input').value='';document.getElementById('w-note').value='';toast('⚖️ Poids enregistré !');renderPoids();}
+function deleteWeight(date){S.weights=S.weights.filter(x=>x.date!==date);renderPoids();}
+function renderWeightStats(){const el=document.getElementById('weight-stats');if(!S.weights.length){el.innerHTML=`<div class="stat-card" style="grid-column:1/-1"><div class="stat-lbl">Aucun poids</div><p style="font-size:var(--tx-sm);color:var(--muted);margin-top:.5rem">Ajoute ton premier poids pour voir tes statistiques.</p></div>`;return;}const last=S.weights[S.weights.length-1],first=S.weights[0];const diff=(last.weight-first.weight).toFixed(1);const diffPct=((diff/first.weight)*100).toFixed(1);const min=Math.min(...S.weights.map(x=>x.weight));el.innerHTML=`<div class="stat-card"><div class="stat-lbl">Poids actuel</div><div class="stat-val">${last.weight} kg</div><div class="stat-change ${diff<0?'down':'up'}">${diff>0?'+':''}${diff} kg</div></div><div class="stat-card"><div class="stat-lbl">Poids initial</div><div class="stat-val">${first.weight} kg</div><div style="font-size:var(--tx-xs);color:var(--muted)">${first.date}</div></div><div class="stat-card"><div class="stat-lbl">Minimum atteint</div><div class="stat-val">${min} kg</div></div><div class="stat-card"><div class="stat-lbl">Variation totale</div><div class="stat-val" style="color:${diff<0?'var(--success)':'var(--error)'}">${diff>0?'+':''}${diff} kg</div><div class="stat-change ${diff<0?'down':'up'}">${diff>0?'+':''}${diffPct}%</div></div>`;}
+function renderWeightChart(){const canvas=document.getElementById('w-chart');const wrap=canvas.parentElement;if(!S.weights.length)return;canvas.width=wrap.offsetWidth||700;canvas.height=220;const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);const W=canvas.width,H=canvas.height,pad={t:20,r:20,b:40,l:55};const data=S.weights;const ws=data.map(d=>d.weight);const minW=Math.min(...ws)-1.5,maxW=Math.max(...ws)+1.5;const sx=i=>pad.l+(i/(data.length-1||1))*(W-pad.l-pad.r);const sy=w=>H-pad.b-(w-minW)/(maxW-minW)*(H-pad.t-pad.b);const pc=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();ctx.strokeStyle=pc('--div');ctx.lineWidth=1;for(let i=0;i<5;i++){const y=pad.t+i*(H-pad.t-pad.b)/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();ctx.fillStyle=pc('--muted');ctx.font='11px Satoshi,sans-serif';ctx.textAlign='right';ctx.fillText((maxW-i*(maxW-minW)/4).toFixed(1)+'kg',pad.l-5,y+4);}const g=ctx.createLinearGradient(0,pad.t,0,H-pad.b);g.addColorStop(0,'rgba(79,152,163,.35)');g.addColorStop(1,'rgba(79,152,163,0)');ctx.beginPath();data.forEach((d,i)=>{const x=sx(i),y=sy(d.weight);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.lineTo(sx(data.length-1),H-pad.b);ctx.lineTo(sx(0),H-pad.b);ctx.closePath();ctx.fillStyle=g;ctx.fill();ctx.beginPath();data.forEach((d,i)=>{const x=sx(i),y=sy(d.weight);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.strokeStyle=pc('--primary');ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();data.forEach((d,i)=>{const x=sx(i),y=sy(d.weight);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle=pc('--primary');ctx.fill();if(i===0||i===data.length-1||data.length<=10){ctx.fillStyle=pc('--muted');ctx.font='10px Satoshi,sans-serif';ctx.textAlign='center';ctx.fillText(d.date.slice(5),x,H-pad.b+14);}});}
+function renderWeightList(){const el=document.getElementById('w-list');if(!S.weights.length){el.innerHTML=`<p style="color:var(--muted);font-size:var(--tx-sm)">Aucune entrée.</p>`;return;}el.innerHTML=[...S.weights].reverse().map((w,i,arr)=>{const prev=i<arr.length-1?arr[i+1]:null;const diff=prev?(w.weight-prev.weight).toFixed(1):null;return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--div)"><div><span style="font-weight:600">${w.weight} kg</span><span style="color:var(--muted);font-size:var(--tx-sm);margin-left:.75rem">${w.date}</span>${w.note?`<span style="color:var(--faint);font-size:var(--tx-xs);margin-left:.5rem">— ${w.note}</span>`:''}</div><div style="display:flex;align-items:center;gap:.75rem">${diff!==null?`<span style="font-size:var(--tx-sm);font-weight:600;color:${diff<0?'var(--success)':'var(--error)'}">${diff>0?'+':''}${diff} kg</span>`:''}<button class="btn-icon" onclick="deleteWeight('${w.date}')" style="width:26px;height:26px;color:var(--error)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button></div></div>`;}).join('');}
+
+// ══════════════════════════════════════════
+// HISTORIQUE
+// ══════════════════════════════════════════
+function renderHist(){const el=document.getElementById('hist-content');const all=[];PROGRAMME.forEach((sem,wi)=>sem.jours.forEach((j,di)=>j.activites.forEach(a=>{const s=S.done[a.id];if(s?.done)all.push({...a,sem:wi+1,jour:j.label,ts:s.ts,charge:s.charge,note:s.note});})));if(!all.length){el.innerHTML=`<div class="card" style="text-align:center;padding:3rem"><div style="font-size:2rem;margin-bottom:1rem">📭</div><p style="color:var(--muted)">Aucune activité complétée.</p></div>`;return;}const byDay={};all.forEach(a=>{const k=`S${a.sem}-${a.jour}`;if(!byDay[k])byDay[k]={label:`Semaine ${a.sem} — ${a.jour}`,acts:[]};byDay[k].acts.push(a);});el.innerHTML=Object.entries(byDay).reverse().map(([k,v])=>`<div class="card" style="margin-bottom:1rem"><h3 style="font-weight:600;margin-bottom:1rem">${v.label} <span class="badge badge-s">${v.acts.length} activités</span></h3><div style="display:flex;flex-direction:column;gap:.5rem">${v.acts.map(a=>`<div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--div)"><span style="font-size:1.1rem">${a.icone}</span><div style="flex:1"><div style="font-weight:500;font-size:var(--tx-sm)">${a.nom}</div>${a.muscles?`<span class="tag-muscle">🎯 ${a.muscles}</span>`:''}<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.2rem">${a.charge?`<span class="badge badge-p">⚖️ ${a.charge}</span>`:''} ${a.note?`<span style="font-size:var(--tx-xs);color:var(--muted);font-style:italic">"${a.note}"</span>`:''}</div></div><span class="badge badge-s">✓</span></div>`).join('')}</div></div>`).join('');}
+
+// ══════════════════════════════════════════
+// THEME
+// ══════════════════════════════════════════
+(function(){const btn=document.getElementById('theme-toggle');const r=document.documentElement;let th=r.getAttribute('data-theme')||'dark';const si=()=>btn.innerHTML=th==='dark'?`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`:`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;si();btn.addEventListener('click',()=>{th=th==='dark'?'light':'dark';r.setAttribute('data-theme',th);si();if(S.weights.length)renderWeightChart();});})();
+
+
+const MEALS = [
+  {day:"Lundi", name:"Poulet, riz & haricots verts", time:"25 min", type:"Dejeuner",
+   ingredients:["150 g de blanc de poulet","120 g de riz cuit","150 g de haricots verts","1 cs huile d'olive","Sel, poivre, ail en poudre"],
+   steps:["Fais cuire le riz selon les instructions.","Coupe le poulet en morceaux et assaisonne-le avec sel, poivre et ail.","Fais revenir le poulet 8 a 10 minutes dans une poele avec l'huile.","Fais cuire ou rechauffe les haricots verts.","Sers le tout dans une assiette avec un filet d'huile."],
+   tips:"Simple, rassasiant et parfait apres une seance."},
+  {day:"Mardi", name:"Omelette, pommes de terre & salade", time:"20 min", type:"Diner",
+   ingredients:["3 oeufs","200 g de pommes de terre","1 poignee de salade verte","1/2 oignon","Sel, poivre"],
+   steps:["Epluche et coupe les pommes de terre en petits des.","Fais-les cuire a la poele jusqu'a ce qu'elles soient tendres.","Bats les oeufs avec le sel et le poivre.","Ajoute l'oignon emince puis verse les oeufs dans la poele.","Laisse cuire l'omelette et sers avec la salade."],
+   tips:"Tres classique, pas cher et facile a refaire."},
+  {day:"Mercredi", name:"Steak hache, pates & courgettes", time:"25 min", type:"Dejeuner",
+   ingredients:["1 steak hache 5%","120 g de pates cuites","1 courgette","1 cc d'huile d'olive","Sel, poivre, herbes provencales"],
+   steps:["Fais cuire les pates.","Coupe la courgette en demi-rondelles.","Fais revenir la courgette a la poele avec un peu d'huile.","Fais cuire le steak hache selon la cuisson souhaitee.","Assemble avec les pates et saupoudre d'herbes."],
+   tips:"Repas muscu simple avec des aliments faciles a trouver."},
+  {day:"Jeudi", name:"Wrap thon, fromage frais & crudites", time:"10 min", type:"Dejeuner rapide",
+   ingredients:["1 grande tortilla de ble","1 boite de thon au naturel","1 cs de fromage frais","1 tomate","Quelques feuilles de salade","Poivre"],
+   steps:["Egoute le thon.","Melange le thon avec le fromage frais et le poivre.","Depose la salade et la tomate en tranches au centre de la tortilla.","Ajoute le melange au thon.","Roule le wrap bien serre et coupe-le en deux."],
+   tips:"Ideal quand tu veux manger sain sans cuisiner longtemps."},
+  {day:"Vendredi", name:"Dinde, semoule & carottes", time:"20 min", type:"Diner",
+   ingredients:["1 escalope de dinde","100 g de semoule","2 carottes","1 cs d'huile d'olive","Sel, poivre, paprika doux"],
+   steps:["Fais gonfler la semoule avec de l'eau chaude salte selon le paquet.","Epluche et coupe les carottes en rondelles.","Fais cuire les carottes a la vapeur ou a l'eau.","Fais cuire la dinde a la poele avec l'huile, le sel et le paprika.","Sers avec la semoule et les carottes."],
+   tips:"Tres digeste et pratique les jours d'entrainement."},
+  {day:"Samedi", name:"Saumon, pommes de terre & brocoli", time:"30 min", type:"Dejeuner",
+   ingredients:["1 pave de saumon","200 g de pommes de terre","150 g de brocoli","Jus de citron","Sel, poivre"],
+   steps:["Fais cuire les pommes de terre a l'eau ou a la vapeur.","Fais cuire le brocoli jusqu'a ce qu'il soit tendre.","Assaisonne le saumon avec sel, poivre et citron.","Fais cuire le saumon a la poele ou au four 15 min.","Sers le tout ensemble."],
+   tips:"Bon repas du week-end, simple et riche en proteines."},
+  {day:"Dimanche", name:"Poulet au four, riz & carottes", time:"35 min", type:"Batch cooking",
+   ingredients:["2 filets de poulet","150 g de riz","3 carottes","Herbes de Provence","Sel, poivre"],
+   steps:["Preche le four a 200 degres.","Assaisonne le poulet avec sel, poivre et herbes.","Mets le poulet au four pendant 25 a 30 minutes.","Fais cuire le riz pendant ce temps.","Fais cuire les carottes a l'eau et sers le tout."],
+   tips:"Parfait pour preparer des portions en avance pour la semaine."}
+];
+
+let mealDay = 0;
+
+function renderMeals() {
+  var sel = document.getElementById('meal-day-sel');
+  var content = document.getElementById('meal-content');
+  if (!sel || !content) return;
+  var btns = '';
+  MEALS.forEach(function(m, i) {
+    var cls = 'chip' + (i === mealDay ? ' active' : '');
+    btns += '<button class="' + cls + '" onclick="mealDay=' + i + ';renderMeals()">' + m.day + '</button>';
+  });
+  sel.innerHTML = btns;
+  var r = MEALS[mealDay];
+  var ingHtml = r.ingredients.map(function(x){ return '<div style="font-size:.88rem;padding:.25rem 0;border-bottom:1px solid var(--c-border)">• ' + x + '</div>'; }).join('');
+  var stepsHtml = r.steps.map(function(x, i){ return '<div style="font-size:.88rem;display:flex;gap:.5rem;padding:.35rem 0"><span style="min-width:20px;font-weight:700;color:var(--c-accent)">' + (i+1) + '.</span><span>' + x + '</span></div>'; }).join('');
+  content.innerHTML =
+    '<div class="card card-glow">' +
+      '<div class="day-header">' +
+        '<div>' +
+          '<div class="day-title">' + r.name + '</div>' +
+          '<div class="day-subtitle">' + r.day + ' &middot; ' + r.type + ' &middot; ' + r.time + '</div>' +
+        '</div>' +
+        '<span class="badge badge-orange">🍳 Facile</span>' +
+      '</div>' +
+      '<div class="g2" style="margin-top:.75rem">' +
+        '<div class="card" style="padding:1rem;background:var(--c-surface)">' +
+          '<h3 style="font-family:var(--ff-h);font-size:1rem;font-weight:700;margin-bottom:.75rem">🧂 Ingredients</h3>' +
+          ingHtml +
+        '</div>' +
+        '<div class="card" style="padding:1rem;background:var(--c-surface)">' +
+          '<h3 style="font-family:var(--ff-h);font-size:1rem;font-weight:700;margin-bottom:.75rem">👨‍🍳 Etapes</h3>' +
+          stepsHtml +
+        '</div>' +
+      '</div>' +
+      '<div style="margin-top:1rem"><span class="badge badge-green">💡 ' + r.tips + '</span></div>' +
+    '</div>';
+}
+
+
+// ════════════════════════ RECETTES ════════════════════════
+const DB = [
+["Poulet citron-herbes & riz","Dejeuner","30 min",
+ ["150g blanc de poulet","120g riz basmati","1 citron","Thym, romarin","Huile d'olive, sel, poivre"],
+ ["Fais mariner le poulet 10 min dans le jus de citron, thym, romarin, sel, poivre.",
+  "Fais cuire le riz basmati selon les instructions.",
+  "Fais griller le poulet a feu moyen 5 min de chaque cote.",
+  "Sers le poulet tranche sur le riz avec un filet d'huile."],
+ "Riche en proteines, leger et tres parfume grace aux herbes."],
+
+["Filet de cabillaud, patate douce & epinards","Diner","25 min",
+ ["1 filet de cabillaud","1 patate douce","100g epinards frais","Ail, huile d'olive","Sel, poivre, paprika"],
+ ["Epluche et coupe la patate douce en cubes, fais-les rotir au four 200 degres 20 min.",
+  "Fais revenir l'ail dans l'huile puis ajoute les epinards 2 min.",
+  "Assaisonne le cabillaud avec le paprika, sel et poivre.",
+  "Fais-le cuire a la poele 3 min de chaque cote.",
+  "Sers avec la patate douce et les epinards."],
+ "Poisson blanc leger, riche en vitamines grace a la patate douce."],
+
+["Boulettes de dinde sauce tomate & pates completes","Dejeuner","30 min",
+ ["200g viande de dinde hachee","120g pates completes","400g tomates concassees","Oignon, ail","Herbes italiennes"],
+ ["Melange la dinde avec sel, poivre, herbes et forme des boulettes.",
+  "Fais dorer les boulettes a la poele.",
+  "Fais revenir l'oignon et l'ail, ajoute les tomates et laisse mijoter 10 min.",
+  "Fais cuire les pates.",
+  "Sers les boulettes avec la sauce sur les pates."],
+ "Version saine du classique spaghetti boulettes."],
+
+["Salade nicoise revisitee","Dejeuner","15 min",
+ ["1 boite de thon","2 oeufs durs","100g haricots verts","Tomates cerises","Olives noires, anchois"],
+ ["Fais cuire les oeufs durs 10 min puis ecale-les.",
+  "Blanchis les haricots verts 5 min a l'eau bouillante.",
+  "Dispose tous les ingredients dans un plat.",
+  "Assaisonne avec huile d'olive, vinaigre, sel et poivre."],
+ "Salade complete, riche en proteines et en bons gras."],
+
+["Poulet tikka masala leger","Diner","35 min",
+ ["150g blanc de poulet","100ml yaourt nature","400g tomates concassees","Cumin, paprika, gingembre","Oignon, ail"],
+ ["Coupe le poulet en morceaux, marine-le dans le yaourt et les epices 15 min.",
+  "Fais dorer l'oignon et l'ail dans une poele.",
+  "Ajoute le poulet marine et fais-le saisir.",
+  "Verse les tomates et laisse mijoter 15 min.",
+  "Sers avec du riz basmati."],
+ "Saveurs indiennes accessibles, version allege sans creme."],
+
+["Saumon teriyaki & brocoli vapeur","Diner","20 min",
+ ["1 pave de saumon","150g brocoli","2cs sauce soja","1cs miel","1cc huile de sesame"],
+ ["Melange la sauce soja, le miel et l'huile de sesame.",
+  "Marine le saumon dans cette sauce 10 min.",
+  "Fais cuire le brocoli a la vapeur.",
+  "Fais griller le saumon a la poele 4 min de chaque cote en l'arrosant de marinade.",
+  "Sers avec le brocoli."],
+ "Sauce teriyaki maison sans additifs, poisson tres savoureux."],
+
+["Frittata courgette & feta","Diner","20 min",
+ ["4 oeufs","1 courgette","50g feta","1/2 oignon","Menthe fraiche, sel, poivre"],
+ ["Prechauffes le four a 180 degres.",
+  "Fais revenir l'oignon et la courgette en rondelles a la poele.",
+  "Bats les oeufs avec sel et poivre, ajoute la feta emiettee.",
+  "Verse les oeufs sur les legumes et enfourne 10 min.",
+  "Parseme de menthe fraiche."],
+ "Leger et rapide, parfait pour un diner post-seance."],
+
+["Poke bowl thon, riz et avocat","Dejeuner","15 min",
+ ["1 boite de thon","100g riz cuit","1/2 avocat","Concombre","Sauce soja, graines de sesame"],
+ ["Fais cuire le riz et laisse refroidir.",
+  "Coupe l'avocat et le concombre en tranches.",
+  "Dispose le riz dans un bol.",
+  "Ajoute le thon, l'avocat et le concombre.",
+  "Arrose de sauce soja et parseme de sesame."],
+ "Le classique hawaien revisite version saine et rassasiante."],
+
+["Soupe potiron gingembre","Diner","30 min",
+ ["500g potiron","1 oignon","1 gousse d'ail","1cc gingembre rape","Bouillon de legumes"],
+ ["Epluche et coupe le potiron en cubes.",
+  "Fais revenir l'oignon et l'ail dans un peu d'huile.",
+  "Ajoute le potiron, le gingembre et le bouillon.",
+  "Laisse cuire 20 min puis mixe le tout.",
+  "Assaisonne et sers chaud."],
+ "Soupe reconfortante, anti-inflammatoire grace au gingembre."],
+
+["Poulet roti au four, fenouil & tomates","Dejeuner","40 min",
+ ["2 filets de poulet","1 fenouil","200g tomates cerises","Ail en chemise","Huile d'olive, thym"],
+ ["Prechauffes le four a 200 degres.",
+  "Coupe le fenouil en quartiers.",
+  "Dispose poulet, fenouil, tomates et ail dans un plat.",
+  "Arrose d'huile, parseme de thym et enfourne 30 min."],
+ "Plat du dimanche sain, une seule plaque, zero stress."],
+
+["Wok de crevettes, poivrons & riz","Dejeuner","20 min",
+ ["150g crevettes decortiquees","2 poivrons colores","100g riz","Sauce soja","Gingembre, ail"],
+ ["Fais cuire le riz.",
+  "Fais sauter l'ail et le gingembre dans un wok.",
+  "Ajoute les poivrons en lamelles et fais-les revenir 3 min.",
+  "Ajoute les crevettes et la sauce soja, fais cuire 3 min.",
+  "Sers sur le riz."],
+ "Couleurs et vitamines au rendez-vous, cuisson ultra rapide."],
+
+["Poulet moutarde & poireaux","Diner","30 min",
+ ["150g blanc de poulet","2 poireaux","1cs moutarde a l'ancienne","100ml bouillon de poulet","Creme legere"],
+ ["Coupe les poireaux en rondelles et fais-les fondre a la poele.",
+  "Saisit le poulet en morceaux.",
+  "Melange moutarde, bouillon et creme, verse sur le poulet.",
+  "Laisse mijoter 10 min.",
+  "Sers avec du riz ou des pates."],
+ "Sauce onctueuse sans etre lourde, tres parfumee."],
+
+["Oeufs cocotte aux epinards & parmesan","Diner","15 min",
+ ["2 oeufs","100g epinards","20g parmesan rape","1cs creme legere","Sel, noix de muscade"],
+ ["Prechauffes le four a 180 degres.",
+  "Fais fondre les epinards a la poele.",
+  "Repartis les epinards dans des ramequins.",
+  "Casse un oeuf dans chaque, ajoute la creme et le parmesan.",
+  "Enfourne 10 min et sers immediatement."],
+ "Diner en 15 min, elegant et riche en proteines."],
+
+["Burger de dinde maison","Dejeuner","25 min",
+ ["200g dinde hachee","2 feuilles de salade","1 tomate","Cornichons","Pain complet"],
+ ["Forme des steaks avec la dinde hachee, assaisonne.",
+  "Fais-les cuire a la poele 5 min de chaque cote.",
+  "Grille le pain.",
+  "Garnit avec salade, tomate, cornichons et la galette.",
+  "Ajoute une pointe de moutarde."],
+ "Version healthy du burger, viande maigre et pain complet."],
+
+["Tarte fine courgette-chevre","Dejeuner","30 min",
+ ["1 pate brisee fine","2 courgettes","100g chevre frais","Thym","Huile d'olive"],
+ ["Prechauffes le four a 200 degres.",
+  "Etale la pate sur une plaque.",
+  "Dispose les rondelles de courgette sur la pate.",
+  "Emiette le chevre dessus et parseme de thym.",
+  "Enfourne 20 min."],
+ "Recette estivale legere, parfaite pour un dejeuner sur le pouce."],
+
+["Pavé de saumon en croute de sesame","Diner","15 min",
+ ["1 pave de saumon","2cs graines de sesame","1cs sauce soja","Jus de citron","Huile"],
+ ["Badigeonne le saumon de sauce soja.",
+  "Roule-le dans les graines de sesame.",
+  "Fais chauffer l'huile et saisis le saumon 3 min de chaque cote.",
+  "Sers avec du citron et une salade verte."],
+ "Croute croustillante, poisson fondant, prêt en 15 min."],
+
+["Poele de gnocchis tomates-epinards","Diner","15 min",
+ ["250g gnocchis","200g tomates cerises","100g epinards","Ail","Parmesan, huile d'olive"],
+ ["Fais sauter les gnocchis a la poele sans cuisson prealable.",
+  "Ajoute l'ail et les tomates cerises coupees en deux.",
+  "Laisse fondre 5 min puis ajoute les epinards.",
+  "Parseme de parmesan et sers."],
+ "Recette une poele, 15 min, tres satisfaisante."],
+
+["Poulet cacciatore aux olives","Dejeuner","40 min",
+ ["2 cuisses de poulet","400g tomates concassees","Olives noires","Poivron rouge","Ail, herbes"],
+ ["Fais dorer les cuisses de poulet dans l'huile.",
+  "Ajoute l'ail et le poivron en lamelles.",
+  "Verse les tomates et les olives.",
+  "Laisse mijoter 25 min a couvert.",
+  "Sers avec du riz ou du pain complet."],
+ "Plat mijoté du sud, savoureux et peu calorique."],
+
+["Soupe de lentilles corail au cumin","Diner","25 min",
+ ["200g lentilles corail","1 oignon","2 carottes","1cc cumin","Bouillon de legumes"],
+ ["Fais revenir l'oignon en petits des.",
+  "Ajoute les carottes en rondelles et le cumin.",
+  "Ajoute les lentilles et couvre de bouillon.",
+  "Laisse cuire 15 min et mixe la moitie.",
+  "Ajuste l'assaisonnement et sers."],
+ "Soupe riche en fibres et proteines vegetales."],
+
+["Assiette nordique saumon fume & crudites","Dejeuner","10 min",
+ ["100g saumon fume","Concombre","Radis","1/2 avocat","Pain de seigle, citron"],
+ ["Coupe concombre, radis et avocat en tranches.",
+  "Dispose tout sur une assiette avec le saumon.",
+  "Arrose de jus de citron.",
+  "Sers avec du pain de seigle."],
+ "Rapide et nutritif, richissime en omega 3."],
+
+["Dhal de lentilles a l'indienne","Diner","30 min",
+ ["200g lentilles vertes","400g tomates concassees","1 oignon","Curcuma, cumin, coriandre","Ail, gingembre"],
+ ["Fais revenir oignon, ail et gingembre.",
+  "Ajoute les epices et fais-les torréfier 1 min.",
+  "Ajoute tomates et lentilles, couvre d'eau.",
+  "Laisse cuire 20 min en remuant.",
+  "Sers avec du riz basmati."],
+ "Plat vegetal, ultra-riche en proteines et fer."],
+
+["Poulet au miel & soja","Dejeuner","25 min",
+ ["150g blanc de poulet","2cs sauce soja","1cs miel","1cc huile de sesame","Graines de sesame"],
+ ["Melange soja, miel et huile de sesame.",
+  "Fais mariner le poulet 10 min.",
+  "Fais cuire le poulet a la poele a feu moyen.",
+  "Arrose regulierement de marinade.",
+  "Parseme de sesame et sers avec du riz."],
+ "Balance parfaite entre sucre-sale, cuisson glacee."],
+
+["Galette de sarrasin jambon & oeuf","Dejeuner","15 min",
+ ["1 galette de sarrasin","1 oeuf","1 tranche de jambon blanc","Emmental rape","Ciboulette"],
+ ["Fais chauffer la galette dans une poele.",
+  "Casse l'oeuf au centre.",
+  "Ajoute le jambon et l'emmental.",
+  "Laisse cuire jusqu'a ce que le blanc soit pris.",
+  "Parseme de ciboulette et sers."],
+ "Galette bretonne complete, sans gluten et rapide."],
+
+["Risotto poulet & champignons light","Diner","35 min",
+ ["150g riz arborio","200g champignons","100g poulet","Bouillon de volaille","Parmesan, oignon"],
+ ["Fais revenir l'oignon et les champignons.",
+  "Ajoute le riz et les des de poulet.",
+  "Verse le bouillon louche par louche en remuant.",
+  "Continue 20 min jusqu'a absorption complete.",
+  "Finis avec un peu de parmesan."],
+ "Risotto allege, sans beurre ni creme mais tres crémeux."],
+
+["Crevettes ail & persil, pates completes","Diner","15 min",
+ ["150g crevettes","120g pates completes","3 gousses d'ail","Persil frais","Huile d'olive, citron"],
+ ["Fais cuire les pates.",
+  "Fais sauter l'ail dans l'huile.",
+  "Ajoute les crevettes 2 min de chaque cote.",
+  "Melange avec les pates.",
+  "Ajoute persil hache et jus de citron."],
+ "Rapide, parfume et riche en proteines marines."],
+
+["Gaspacho maison & pain grille","Diner","10 min",
+ ["4 tomates","1 concombre","1 poivron rouge","Ail, vinaigre de xerès","Huile d'olive"],
+ ["Coupe tous les legumes en gros morceaux.",
+  "Mixe avec l'ail, le vinaigre et l'huile.",
+  "Assaisonne et place au frigo 1h.",
+  "Sers frais avec des tranches de pain grille."],
+ "Soupe froide estivale, hyper rafraichissante et 0 cuisson."],
+
+["Poulet au curry jaune & riz complet","Dejeuner","30 min",
+ ["150g blanc de poulet","100ml lait de coco allege","1cc curry en poudre","Oignon, ail","Riz complet"],
+ ["Fais revenir l'oignon et l'ail.",
+  "Ajoute le poulet en cubes et le curry.",
+  "Verse le lait de coco et laisse mijoter 15 min.",
+  "Fais cuire le riz complet en parallele.",
+  "Sers le curry sur le riz."],
+ "Curry allege au lait de coco, tres parfume."],
+
+["Cabillaud en papillote citron & courgettes","Diner","20 min",
+ ["1 filet de cabillaud","1 courgette","1 citron","Thym, laurier","Huile d'olive"],
+ ["Prechauffes le four a 180 degres.",
+  "Coupe la courgette en rondelles.",
+  "Dispose le cabillaud sur une feuille de papier cuisson.",
+  "Ajoute courgette, rondelles de citron, thym.",
+  "Ferme la papillote et enfourne 15 min."],
+ "Cuisson douce, zero matiere grasse, gout subtil."],
+
+["Tartare de saumon maison","Diner","10 min",
+ ["150g saumon tres frais","1/2 avocat","Echalote","Jus de citron","Ciboulette, huile d'olive"],
+ ["Coupe le saumon en petits des.",
+  "Coupe l'avocat en des.",
+  "Melange avec l'echalote emincee, citron, huile.",
+  "Parseme de ciboulette.",
+  "Sers immediatement avec une salade."],
+ "No-cook, ultra frais, riche en omega 3."],
+
+["Bol de riz, edamame & poulet grille","Dejeuner","20 min",
+ ["100g riz","100g edamame","150g poulet grille","Sauce soja","Graines de sesame"],
+ ["Fais cuire le riz.",
+  "Fais cuire ou decongele les edamame.",
+  "Grille le poulet assaisonne.",
+  "Compose le bol avec tous les ingredients.",
+  "Arrose de sauce soja et sesame."],
+ "Bol nourrissant inspire cuisine japonaise."],
+
+["Gratin de chou-fleur au jambon","Diner","35 min",
+ ["1/2 chou-fleur","2 tranches de jambon","Sauce bechamel legere","Gruyere rape","Noix de muscade"],
+ ["Fais cuire le chou-fleur a la vapeur.",
+  "Dispose dans un plat a gratin.",
+  "Ajoute le jambon coupe en lanières.",
+  "Nappé de bechamel, saupoudre de gruyere.",
+  "Enfourne 20 min a 200 degres."],
+ "Plat réconfortant revisité en version plus légère."],
+
+["Pavé de thon grillé aux herbes & salade","Dejeuner","10 min",
+ ["1 pave de thon frais","Herbes de Provence","Huile d'olive","Jus de citron","Salade mesclun"],
+ ["Assaisonne le thon avec les herbes, sel, poivre.",
+  "Fais-le griller a la poele tres chaude 1 min 30 de chaque cote.",
+  "Prepare la salade avec citron et huile.",
+  "Sers le thon rose en son coeur sur la salade."],
+ "Tuna steak comme au restaurant, cuisson ultra rapide."],
+
+["Poele de legumes d'ete & oeuf poche","Diner","20 min",
+ ["2 courgettes","1 poivron","1 aubergine","2 oeufs","Ail, herbes"],
+ ["Coupe tous les legumes en des.",
+  "Fais-les sauter a la poele avec l'ail et les herbes.",
+  "Poches les oeufs dans de l'eau frémissante.",
+  "Dispose les legumes dans l'assiette et pose l'oeuf poche dessus."],
+ "Oeufs poches et ratatouille express, version chic."],
+
+["Chili con carne allege","Dejeuner","40 min",
+ ["200g boeuf hache maigre","1 boite de haricots rouges","400g tomates concassees","1 oignon","Cumin, paprika, piment doux"],
+ ["Fais revenir l'oignon et le boeuf.",
+  "Ajoute les epices et fais torréfier 1 min.",
+  "Verse tomates et haricots.",
+  "Laisse mijoter 25 min a feu doux.",
+  "Sers avec du riz ou du pain complet."],
+ "Le grand classique allege en gras, plein de proteines."],
+
+["Salade de lentilles vertes & lardon maigre","Dejeuner","20 min",
+ ["200g lentilles vertes","50g lardons allege","Moutarde","Vinaigre de vin","Echalotes"],
+ ["Fais cuire les lentilles.",
+  "Fais revenir les lardons.",
+  "Prepare une vinaigrette avec moutarde et vinaigre.",
+  "Melange lentilles, lardons et vinaigrette.",
+  "Sers tiede."],
+ "La vraie salade de lentilles lyonnaise, version plus saine."],
+
+["Soupe de poisson maison","Diner","35 min",
+ ["300g poisson blanc","2 poireaux","2 pommes de terre","Safran","Bouillon de poisson"],
+ ["Coupe les poireaux et pommes de terre.",
+  "Fais-les revenir dans l'huile.",
+  "Ajoute le bouillon et le safran.",
+  "Laisse cuire 15 min puis ajoute le poisson en morceaux.",
+  "Fais cuire encore 5 min et sers."],
+ "Soupe du pecheur revisitee en version simple."],
+
+["Escalope cordon bleu maison allege","Dejeuner","20 min",
+ ["1 escalope de veau","1 tranche de jambon","20g gruyere","Chapelure","1 oeuf"],
+ ["Aplatit l'escalope.",
+  "Garnit avec jambon et gruyere.",
+  "Replie et fixe avec des piques.",
+  "Passe dans l'oeuf battu puis la chapelure.",
+  "Fais dorer a la poele 5 min de chaque cote."],
+ "Maison = 3x moins gras que le cordon bleu industriel."],
+
+["Poulet en sauce a la tomate & olives","Diner","35 min",
+ ["2 filets de poulet","400g tomates concassees","100g olives vertes","Ail, basilic","Huile d'olive"],
+ ["Saisit les filets de poulet.",
+  "Fais revenir l'ail.",
+  "Ajoute les tomates, les olives et le basilic.",
+  "Pose le poulet dans la sauce et laisse mijoter 20 min.",
+  "Sers avec du riz ou des gnocchis."],
+ "Plat mediteraneen leger et parfume."],
+
+["Veloute de brocoli & fromage frais","Diner","20 min",
+ ["400g brocoli","1 oignon","100g fromage frais allege","Bouillon de legumes","Noix de muscade"],
+ ["Fais revenir l'oignon.",
+  "Ajoute le brocoli en fleurettes et le bouillon.",
+  "Fais cuire 15 min.",
+  "Mixe et incorpore le fromage frais.",
+  "Assaisonne avec la muscade et sers."],
+ "Veloute vert ultra-nutritif, frais et crémeux sans creme."],
+
+["Tartines avocat & saumon fume","Dejeuner rapide","10 min",
+ ["2 tranches de pain complet","1 avocat","80g saumon fume","Jus de citron","Ciboulette, poivre"],
+ ["Grille le pain.",
+  "Ecrase l'avocat avec le citron, sel et poivre.",
+  "Etale sur le pain.",
+  "Dispose le saumon par-dessus.",
+  "Parseme de ciboulette."],
+ "Brunch healthy version salée, riche en bons acides gras."],
+
+["Roti de porc a la moutarde & legumes du four","Dejeuner","50 min",
+ ["300g roti de porc filet","Moutarde forte","Carottes, pommes de terre","Echalotes","Huile, thym"],
+ ["Prechauffes le four a 200 degres.",
+  "Badigeonne le roti de moutarde.",
+  "Dispose les legumes en quartiers dans le plat.",
+  "Ajoute thym, huile, sel et poivre.",
+  "Enfourne 40 min en arrosant a mi-cuisson."],
+ "Un plat complet qui se fait tout seul au four."],
+
+["Soupe asiatique poulet & nouilles","Diner","20 min",
+ ["150g blanc de poulet","80g nouilles de riz","Bouillon de poulet","Sauce soja","Gingembre, coriandre"],
+ ["Fais chauffer le bouillon avec le gingembre rape.",
+  "Coupe le poulet en lamelles et fais-le cuire dans le bouillon.",
+  "Ajoute les nouilles et laisse cuire selon le paquet.",
+  "Assaisonne avec la sauce soja.",
+  "Sers avec de la coriandre fraiche."],
+ "Soupe reconfortante style pho, legere et parfumee."],
+
+["Filet de truite & ecrasé de pommes de terre","Diner","25 min",
+ ["1 filet de truite","250g pommes de terre","1cs huile d'olive","Ciboulette","Sel, poivre"],
+ ["Fais cuire les pommes de terre et ecrase-les grossierement.",
+  "Assaisonne l'ecrase avec huile, ciboulette, sel et poivre.",
+  "Assaisonne la truite et fais-la cuire cote peau en premier 4 min.",
+  "Retourne 2 min.",
+  "Sers avec l'ecrase."],
+ "Poisson delicat, ecrase rustique, un duo parfait."],
+
+["Blanquette de veau allegee","Dejeuner","50 min",
+ ["300g veau a braiser","200g champignons","1 oignon","Bouillon de veau","Farine, creme legere"],
+ ["Fais revenir le veau sans coloration.",
+  "Ajoute l'oignon et les champignons.",
+  "Couvre de bouillon et laisse mijoter 35 min.",
+  "Lie la sauce avec un peu de farine et la creme.",
+  "Sers avec du riz."],
+ "Grand classique français allege, tres réconfortant."],
+
+["Aubergines farcies a la viande","Diner","40 min",
+ ["2 aubergines","200g boeuf hache","400g tomates concassees","Herbes","Parmesan rape"],
+ ["Coupe les aubergines en deux et vide-les.",
+  "Fais revenir la chair avec le boeuf et les herbes.",
+  "Ajoute les tomates et laisse mijoter 10 min.",
+  "Remplis les coques d'aubergine.",
+  "Saupoudre de parmesan et enfourne 20 min a 200 degres."],
+ "Plat complet dans une aubergine, pas de feculent necessaire."],
+
+["Tacos de poulet aux legumes croquants","Dejeuner","20 min",
+ ["150g poulet grille","2 tacos de ble complet","Avocat","Tomates cerises","Yaourt nature, citron, cumin"],
+ ["Fais cuire le poulet assaisonne.",
+  "Prepare la sauce yaourt avec citron et cumin.",
+  "Rechauffes les tacos.",
+  "Garnit avec poulet, avocat, tomates et sauce.",
+  "Sers immediatement."],
+ "Format street food sain, rapide et equilibre."],
+
+["Moules mariniere allege","Diner","20 min",
+ ["1kg moules","1 verre de vin blanc sec","Echalotes","Persil frais","Beurre leger"],
+ ["Nettoie les moules.",
+  "Fais fondre les echalotes dans un peu de beurre.",
+  "Ajoute le vin blanc et les moules.",
+  "Couvre et laisse cuire 5 min en remuant.",
+  "Parseme de persil et sers."],
+ "Grande source de proteines et de fer a petit prix."],
+
+["Bowl de poulet, patate douce & chou kale","Dejeuner","30 min",
+ ["150g poulet","1 patate douce","100g chou kale","Huile d'olive","Ail, sel, poivre, paprika"],
+ ["Coupe et rotis la patate douce 20 min au four.",
+  "Masse le kale avec huile, sel et poivre.",
+  "Grille le poulet assaisonne.",
+  "Compose le bowl avec tous les elements.",
+  "Ajoute un filet d'huile d'olive."],
+ "Le bowl detox tres tendance dans les salles de sport."],
+
+["Saumon poche a l'aneth & haricots verts","Diner","20 min",
+ ["1 pave de saumon","150g haricots verts","Aneth frais","Jus de citron","Sel"],
+ ["Poche le saumon dans de l'eau frémissante salée 8 min.",
+  "Fais cuire les haricots verts a l'eau.",
+  "Egoutte les deux.",
+  "Dispose dans l'assiette.",
+  "Arrose de citron et parseme d'aneth."],
+ "Cuisson douce qui preserves tous les nutriments."],
+
+["Porc caramelise au soja & riz jasmin","Dejeuner","25 min",
+ ["200g filet de porc","100g riz jasmin","3cs sauce soja","1cs sucre brun","Ail"],
+ ["Fais cuire le riz.",
+  "Coupe le porc en lamelles.",
+  "Fais revenir l'ail et le porc.",
+  "Ajoute soja et sucre, fais carameliser 3 min.",
+  "Sers sur le riz avec des echalotes."],
+ "Porc caramelise style asiatique, irresistible."],
+
+["Salade composee au poulet & avocat","Dejeuner rapide","10 min",
+ ["150g poulet cuit","1/2 avocat","Mesclun","Tomates cerises","Vinaigrette legere"],
+ ["Effiloche le poulet.",
+  "Coupe l'avocat en tranches.",
+  "Compose la salade avec le mesclun, poulet, avocat et tomates.",
+  "Assaisonne avec la vinaigrette.",
+  "Sers frais."],
+ "La salade complète sans feculent, rassasiante et legere."],
+
+["Lasagnes aux legumes & ricotta","Diner","50 min",
+ ["Plaques de lasagnes","300g epinards","250g ricotta","400g tomates concassees","Parmesan"],
+ ["Fais revenir les epinards.",
+  "Melange avec la ricotta, sel, poivre et muscade.",
+  "Alterne couches de lasagnes, melange epinards-ricotta et sauce tomate.",
+  "Termine avec parmesan et sauce tomate.",
+  "Enfourne 35 min a 180 degres."],
+ "Lasagnes vegetariennes, plus legeres que la version classique."],
+
+["Daurade rotie au fenouil","Diner","30 min",
+ ["1 daurade videe","1 fenouil","Citron","Herbes de Provence","Huile d'olive"],
+ ["Prechauffes le four a 200 degres.",
+  "Emince le fenouil et dispose-le dans un plat.",
+  "Pose la daurade dessus.",
+  "Farcis-la avec des rondelles de citron et des herbes.",
+  "Arrose d'huile et enfourne 25 min."],
+ "Poisson entier au four, le plus sain et le moins cher."],
+
+["Riz cantonnais maison allege","Dejeuner","20 min",
+ ["200g riz cuit","2 oeufs","100g petits pois","50g jambon","Sauce soja"],
+ ["Fais sauter le riz dans une poele avec peu d'huile.",
+  "Pousse le riz sur les cotes et brouille les oeufs au centre.",
+  "Ajoute les petits pois et le jambon en des.",
+  "Melange le tout avec la sauce soja.",
+  "Sers chaud."],
+ "Riz cantonnais maison sans glutamate ni matiere grasse en exces."],
+
+["Steak de thon sauce vierge","Dejeuner","10 min",
+ ["1 steak de thon","2 tomates","Olives vertes","Basilic frais","Huile d'olive, citron"],
+ ["Prepare la sauce vierge : tomates en des, olives, basilic, huile, citron.",
+  "Fais griller le steak de thon 1 min 30 de chaque cote.",
+  "Laisse-le saignant en son coeur.",
+  "Pose la sauce vierge dessus et sers immediatement."],
+ "Sauce fraiche pour accompagner le thon saisi, ultra chic."],
+
+["Pates completes carbonara legere","Diner","15 min",
+ ["120g pates completes","2 oeufs","50g lardons allege","Parmesan rape","Poivre noir"],
+ ["Fais cuire les pates.",
+  "Fais revenir les lardons.",
+  "Melange oeufs et parmesan.",
+  "Hors du feu, melange pates, lardons et sauce aux oeufs.",
+  "Poivre genereux et sers."],
+ "Vrai carbonara sans creme, juste oeufs et parmesan."],
+
+["Filet mignon de porc aux champignons","Diner","30 min",
+ ["1 filet mignon de porc","300g champignons","Echalotes","Creme legere","Thym"],
+ ["Saisit le filet mignon entier puis enfourne 15 min a 180 degres.",
+  "Fais revenir les echalotes et les champignons.",
+  "Ajoute la creme et le thym.",
+  "Tranche le filet et sers avec la sauce."],
+ "Viande tendre garantie, sauce onctueuse sans etre lourde."],
+
+["Wrap dinde, avocat & tomates sechees","Dejeuner rapide","10 min",
+ ["1 tortilla","100g dinde emincee","1/2 avocat","4 tomates sechees","Roquette"],
+ ["Dispose tous les ingredients au centre de la tortilla.",
+  "Ajoute quelques feuilles de roquette.",
+  "Roule bien serre.",
+  "Coupe en deux.",
+  "Sers immediatement ou emballe pour le lendemain."],
+ "Parfait pour le meal prep, tres pratique a emporter."],
+
+["Poulet tandoori a la plancha","Dejeuner","25 min",
+ ["150g poulet","150g yaourt nature","Tandoori en poudre","Jus de citron","Ail, gingembre"],
+ ["Melange yaourt, tandoori, citron, ail et gingembre.",
+  "Marine le poulet en morceaux 30 min (ou plus).",
+  "Fais cuire a la plancha ou poele bien chaude.",
+  "Retourne a mi-cuisson.",
+  "Sers avec du riz et une salade verte."],
+ "Poulet tres parfume, version barbecue saine."],
+
+["Veloute de carottes & orange","Diner","25 min",
+ ["500g carottes","1 oignon","Jus d'une orange","Bouillon de legumes","Gingembre"],
+ ["Fais revenir l'oignon et les carottes.",
+  "Ajoute le bouillon et le gingembre.",
+  "Laisse cuire 20 min.",
+  "Mixe avec le jus d'orange.",
+  "Assaisonne et sers avec une pointe de creme."],
+ "Soupe douce-acidulee, riche en beta carotene."],
+
+["Salade cesar poulet grille","Dejeuner","20 min",
+ ["150g poulet grille","Romaine","Croûtons complets","Parmesan","Sauce cesar legere"],
+ ["Grille le poulet assaisonne.",
+  "Prepare la romaine lavee et sechee.",
+  "Fais griller les croûtons au four.",
+  "Compose la salade et ajoute le poulet en tranches.",
+  "Nappé de sauce cesar et parseme de parmesan."],
+ "Grande classique allege, proteine et crunch garantis."],
+
+["Filet de bar en croute de pistaches","Diner","20 min",
+ ["1 filet de bar","30g pistaches mixees grossierement","Jus de citron","Huile d'olive","Sel, poivre"],
+ ["Prechauffes le four a 200 degres.",
+  "Sale et poivre le filet.",
+  "Badigeonne-le d'huile et recouvre de pistaches.",
+  "Enfourne 12 min.",
+  "Sers avec du citron et des haricots verts."],
+ "Poisson chic en 20 min, croute croustillante et savoureuse."],
+
+["Poulet Basquaise","Dejeuner","45 min",
+ ["2 filets de poulet","2 poivrons","400g tomates concassees","Jambon de Bayonne","Ail, oignon, piment"],
+ ["Fais dorer le poulet.",
+  "Fais revenir poivrons, oignon et ail.",
+  "Ajoute tomates et piment, laisse mijoter 10 min.",
+  "Ajoute le poulet et le jambon en lamelles.",
+  "Laisse mijoter 25 min et sers."],
+ "Plat basque ensoleille, tres couleurs et leger."],
+
+["Tartare de boeuf maison","Dejeuner","10 min",
+ ["150g boeuf hache (a la main ou par le boucher)","1 jaune d'oeuf","Capres, cornichons","Moutarde, tabasco","Ciboulette, sel, poivre"],
+ ["Melange le boeuf avec le jaune d'oeuf.",
+  "Ajoute la moutarde, le tabasco et assaisonne.",
+  "Hache les capres et cornichons, incorpore-les.",
+  "Forme le tartare dans un cercle.",
+  "Sers avec de la ciboulette."],
+ "Grand classique brasserie, riche en proteines, zero glucides."],
+
+["Spaghettis aux palourdes (vongole)","Diner","20 min",
+ ["120g spaghettis","300g palourdes","Ail","Persil","Vin blanc, huile d'olive"],
+ ["Fais cuire les spaghettis.",
+  "Fais sauter l'ail dans l'huile.",
+  "Ajoute les palourdes et le vin blanc.",
+  "Couvre 5 min pour qu'elles s'ouvrent.",
+  "Melange avec les pates et le persil hache."],
+ "Plat italien authentique, proteines de fruits de mer, tres leger."],
+
+["Poulet au pamplemousse & estragon","Diner","25 min",
+ ["150g poulet","1/2 pamplemousse rose","Estragon frais","1cs creme legere","Echalote"],
+ ["Fais saisir le poulet et reserve.",
+  "Fais fondre l'echalote.",
+  "Ajoute le jus du pamplemousse et la creme.",
+  "Remet le poulet et l'estragon.",
+  "Laisse mijoter 5 min et sers."],
+ "Association inattendue entre agrume et poulet, tres elegant."],
+
+["Haricots blancs a l'ail & tomates","Diner","15 min",
+ ["1 boite de haricots blancs","400g tomates concassees","Ail","Sauge ou thym","Huile d'olive"],
+ ["Fais revenir l'ail dans l'huile.",
+  "Ajoute les tomates et laisse mijoter 5 min.",
+  "Ajoute les haricots blancs egouttes.",
+  "Laisse chauffer 5 min.",
+  "Assaisonne et sers avec du pain complet."],
+ "Plat toscan ultra simple, riche en fibres et proteines."],
+
+["Salade de riz complet, poulet & poivrons","Dejeuner","15 min",
+ ["150g riz complet cuit","100g poulet cuit","1 poivron rouge","Persil","Vinaigrette citron-huile"],
+ ["Coupe le poivron en petits des.",
+  "Effiloche le poulet.",
+  "Melange tous les ingredients.",
+  "Assaisonne avec la vinaigrette.",
+  "Sers froid ou a temperature ambiante."],
+ "Ideal en meal prep, se conserve 2 jours au frigo."],
+
+["Cabillaud a la provencale","Diner","25 min",
+ ["1 filet de cabillaud","400g tomates concassees","Olives, capres","Basilic","Ail, huile d'olive"],
+ ["Fais revenir l'ail.",
+  "Ajoute tomates, olives et capres.",
+  "Laisse mijoter 10 min.",
+  "Pose le cabillaud dans la sauce.",
+  "Couvre et laisse cuire 8 min, parseme de basilic."],
+ "Poisson cuit directement dans la sauce, saveurs du midi."],
+
+["Gratin de poireaux & saumon","Diner","35 min",
+ ["2 poireaux","150g saumon","1 oeuf","50g creme legere","Gruyere rape"],
+ ["Fais cuire les poireaux emincés a la poele.",
+  "Melange oeuf, creme, sel, poivre.",
+  "Dispose poireaux et saumon en morceaux dans un plat.",
+  "Verse le melange oeuf-creme.",
+  "Saupoudre de gruyere et enfourne 20 min."],
+ "Gratin delicat, omega 3 et legumes, bien equilibre."],
+
+["Bol buddha poulet rotis & crudites","Dejeuner","25 min",
+ ["150g poulet role","100g riz","Carottes rapees","Concombre","Sauce sesame-soja"],
+ ["Fais cuire le riz et le poulet.",
+  "Prepare les carottes rapees et le concombre.",
+  "Compose le bol.",
+  "Prepare la sauce en melangeant sesame, soja, citron.",
+  "Arrose et sers."],
+ "Le bol sain par excellence, ultra-complet et colore."],
+
+["Tian de legumes a la provencale","Diner","45 min",
+ ["2 courgettes","2 tomates","1 aubergine","Herbes de Provence","Huile d'olive, ail"],
+ ["Coupe tous les legumes en rondelles fines.",
+  "Dispose-les debout en les alternant dans un plat.",
+  "Arrose d'huile et parseme d'herbes et d'ail.",
+  "Enfourne 35 min a 180 degres."],
+ "Le plat 100% legumes le plus beau de la cuisine provencale."],
+
+["Escalope de veau a la milanaise legere","Dejeuner","15 min",
+ ["1 escalope de veau","1 oeuf","Chapelure","Jus de citron","Salade"],
+ ["Bats l'oeuf.",
+  "Passe l'escalope dans l'oeuf puis la chapelure.",
+  "Fais dorer a la poele avec peu d'huile.",
+  "Sers avec du citron et une salade.",
+  "Ne pas oublier le sel."],
+ "Version legere du classique milanais, croustillant assure."],
+
+["Bowl de soba, saumon & concombre","Dejeuner","15 min",
+ ["80g nouilles soba","100g saumon fume","1/2 concombre","Sauce ponzu","Graines de sesame"],
+ ["Fais cuire les soba et refroidis sous l'eau froide.",
+  "Coupe le concombre en batonnets.",
+  "Compose le bowl avec soba, saumon et concombre.",
+  "Arrose de sauce ponzu.",
+  "Parseme de sesame."],
+ "Bowl japonais sain, leger et tres rafraichissant."],
+
+["Carottes glacees au miel & gingembre","Accompagnement","15 min",
+ ["4 carottes","1cs miel","1cc gingembre rape","1cs huile d'olive","Fleur de sel"],
+ ["Coupe les carottes en batonnets.",
+  "Fais-les cuire dans l'huile 5 min.",
+  "Ajoute le miel et le gingembre.",
+  "Laisse glacer 3 min a feu vif.",
+  "Sers avec une viande ou un poisson."],
+ "Accompagnement sucre-sale rapide qui change tout."],
+
+["Steak de boeuf & sauce bordelaise legere","Diner","20 min",
+ ["1 steak dans le filet","200ml vin rouge","Echalotes","Bouillon de boeuf","Herbes"],
+ ["Fais revenir les echalotes.",
+  "Deglace au vin rouge.",
+  "Ajoute le bouillon et laisse reduire 10 min.",
+  "Fais griller le steak selon cuisson souhaitee.",
+  "Sers avec la sauce passee."],
+ "Sauce bistrot faite maison, viande maigre = plat equilibre."],
+
+["Salade tiede de poulpe & pommes de terre","Dejeuner","30 min",
+ ["250g poulpe cuit","200g pommes de terre","Olives","Persil","Vinaigrette a la capre"],
+ ["Fais cuire les pommes de terre.",
+  "Coupe le poulpe en morceaux.",
+  "Prepare la vinaigrette avec capres, huile et vinaigre.",
+  "Melange tout tiede.",
+  "Parseme de persil."],
+ "Salade de la mer, riche en proteines et originale."],
+
+["Pates au pesto de roquette maison","Diner","15 min",
+ ["120g pates","50g roquette","30g parmesan","20g pignons","Huile d'olive, ail"],
+ ["Fais cuire les pates.",
+  "Mixe roquette, parmesan, pignons, ail et huile.",
+  "Egoutte les pates en gardant un peu d'eau de cuisson.",
+  "Melange avec le pesto.",
+  "Ajoute un peu d'eau si besoin."],
+ "Pesto maison, beaucoup moins gras que le pesto du commerce."],
+
+["Pintade rotie a l'orange","Dejeuner","60 min",
+ ["1 pintade","2 oranges","Thym","Huile d'olive","Sel, poivre"],
+ ["Prechauffes le four a 200 degres.",
+  "Frotte la pintade avec huile, sel, poivre et thym.",
+  "Glisse des quartiers d'orange a l'interieur.",
+  "Arrose avec le jus d'une orange.",
+  "Enfourne 50 min en arrosant regulierement."],
+ "Volaille plus originale que le poulet, plus savoureuse."],
+
+["Potage Saint-Germain (petits pois)","Diner","20 min",
+ ["300g petits pois","1 oignon","Menthe fraiche","Bouillon de legumes","Creme legere optionnelle"],
+ ["Fais revenir l'oignon.",
+  "Ajoute les petits pois et le bouillon.",
+  "Laisse cuire 10 min.",
+  "Mixe avec la menthe fraiche.",
+  "Sers avec ou sans un trait de creme."],
+ "Veloute vert frais, leger et printanier."],
+
+["Tartines sardines & tomates","Dejeuner rapide","5 min",
+ ["1 boite de sardines a l'huile","2 tranches de pain complet","Tomates","Citron","Persil"],
+ ["Ecrase les sardines a la fourchette.",
+  "Toaste le pain.",
+  "Tartine de sardines.",
+  "Ajoute des rondelles de tomates.",
+  "Arrose de citron et parseme de persil."],
+ "Une des meilleures sources d'omega 3 pour 0 effort."],
+
+["Poulet au poivron & paprika","Dejeuner","30 min",
+ ["2 filets de poulet","2 poivrons","1cc paprika fume","Oignon","Tomates cerises, huile"],
+ ["Coupe poulet et poivrons en lamelles.",
+  "Fais revenir l'oignon.",
+  "Ajoute le poulet et les poivrons.",
+  "Saupoudre de paprika.",
+  "Ajoute les tomates cerises et fais cuire 15 min."],
+ "Couleurs et saveurs, repas complet en une poele."],
+
+["Veloute de celeri & pomme","Diner","25 min",
+ ["300g celeri-rave","1 pomme","1 oignon","Bouillon de legumes","Creme legere"],
+ ["Epluche et coupe celeri et pomme.",
+  "Fais revenir l'oignon.",
+  "Ajoute celeri, pomme et bouillon.",
+  "Laisse cuire 20 min.",
+  "Mixe et ajoute un trait de creme."],
+ "Alliance inattendue celeri-pomme, tres elegant en bouche."],
+
+["Lieu noir & sauce vierge aux herbes","Diner","15 min",
+ ["1 filet de lieu noir","2 tomates","Basilic, ciboulette","Huile d'olive","Jus de citron"],
+ ["Prepare la sauce vierge avec tomates en des, herbes, huile et citron.",
+  "Fais cuire le lieu noir a la poele 3 min de chaque cote.",
+  "Assaisonne.",
+  "Depose la sauce vierge sur le poisson chaud.",
+  "Sers immediatement."],
+ "Poisson blanc economique, sauce fraiche sans cuisson."],
+
+["Osso-buco de veau allege","Dejeuner","60 min",
+ ["2 rouelles de veau","2 tomates","1 oignon","Vin blanc sec","Gremolata (ail-persil-citron)"],
+ ["Fais dorer les rouelles.",
+  "Fais revenir l'oignon, deglace au vin blanc.",
+  "Ajoute les tomates concassees.",
+  "Laisse mijoter 45 min a couvert.",
+  "Sers avec la gremolata et du risotto."],
+ "Plat milanais authentique, collagene et saveurs intenses."],
+
+["Tortilla espagnole aux legumes","Diner","25 min",
+ ["4 oeufs","2 pommes de terre","1 courgette","1/2 oignon","Huile d'olive, sel"],
+ ["Fais cuire les pommes de terre et la courgette en rondelles.",
+  "Bats les oeufs avec sel.",
+  "Ajoute les legumes aux oeufs.",
+  "Verse dans la poele huilee.",
+  "Retourne a mi-cuisson et finis de cuire."],
+ "Tortilla enrichie de courgette, encore plus nutritive."],
+
+["Blanc de poulet farci aux epinards","Diner","30 min",
+ ["1 gros blanc de poulet","100g epinards","50g fromage frais","Ail","Ficelle de cuisine"],
+ ["Fais fondre les epinards a la poele avec l'ail.",
+  "Melange avec le fromage frais.",
+  "Incise le blanc en portefeuille.",
+  "Farcis et ficelle.",
+  "Enfourne 25 min a 180 degres."],
+ "Presentation soignée pour un resultat spectaculaire."],
+
+["Soupe ramen au poulet maison","Diner","30 min",
+ ["150g poulet","80g nouilles ramen","Bouillon de poulet","Oeuf cuit mollet","Sauce soja, gingembre"],
+ ["Fais cuire le poulet dans le bouillon avec gingembre.",
+  "Retire et effiloche le poulet.",
+  "Fais cuire les ramen dans le bouillon.",
+  "Fais cuire l'oeuf mollet 6 min.",
+  "Compose le bol avec bouillon, ramen, poulet et oeuf coupe en deux."],
+ "Ramen maison, infiniment meilleur que l'instantane."],
+
+["Filet de saumon a la plancha & salsa mangue","Diner","15 min",
+ ["1 pave de saumon","1/2 mangue","Piment doux","Coriandre","Jus de citron vert"],
+ ["Prepare la salsa : mangue en des, piment, coriandre, citron vert.",
+  "Fais chauffer la plancha.",
+  "Assaisonne le saumon et fais-le cuire 3 min de chaque cote.",
+  "Pose la salsa sur le saumon."],
+ "Contraste chaud-froid, douceur mangue et saumon saisi."],
+
+["Quiche lorraine allégée","Dejeuner","40 min",
+ ["1 pate brisee fine","3 oeufs","150ml creme legere","100g lardons","Gruyere rape"],
+ ["Prechauffes le four a 180 degres.",
+  "Foncer le moule avec la pate.",
+  "Melange oeufs, creme, sel, poivre et muscade.",
+  "Ajoute lardons et gruyere.",
+  "Enfourne 30 min."],
+ "Version allégée sans creme entiere, gout intact."],
+
+["Poulet au citron confit & olives","Dejeuner","40 min",
+ ["2 filets de poulet","1 citron confit","50g olives vertes","1 oignon","Cumin, coriandre"],
+ ["Fais revenir l'oignon.",
+  "Ajoute le poulet et fais-le dorer.",
+  "Ajoute le citron confit coupe et les olives.",
+  "Saupoudre de cumin et coriandre.",
+  "Laisse mijoter 25 min."],
+ "Recette du Maghreb adaptee, parfumee et exotique sans l'etre trop."],
+
+["Pavé de lieu jaune & fondue de poireaux","Diner","25 min",
+ ["1 filet de lieu jaune","2 poireaux","1cs creme legere","Beurre leger","Sel, poivre"],
+ ["Fais fondre les poireaux emincés dans un peu de beurre 15 min.",
+  "Ajoute la creme, assaisonne.",
+  "Assaisonne le poisson et fais-le cuire a la poele 4 min de chaque cote.",
+  "Sers sur le lit de poireaux."],
+ "Accord classique poireau-poisson, toujours efficace."],
+
+["Salade grecque au poulet","Dejeuner rapide","10 min",
+ ["150g poulet grille","1/4 concombre","1 tomate","50g feta","Olives kalamata, origan"],
+ ["Coupe concombre et tomate en des.",
+  "Effiloche le poulet.",
+  "Compose la salade avec tous les elements.",
+  "Emiette la feta.",
+  "Assaisonne avec huile d'olive, origan et poivre."],
+ "Salade complete et tres coloree, riche en calcium."],
+
+["Moussaka legere","Diner","50 min",
+ ["2 aubergines","200g agneau hache","400g tomates concassees","Bechamel legere","Cannelle, cumin"],
+ ["Grille les tranches d'aubergines au four.",
+  "Fais revenir l'agneau avec les epices et les tomates.",
+  "Alterne couches d'aubergines et de viande.",
+  "Nappé de bechamel legere.",
+  "Enfourne 25 min a 180 degres."],
+ "Moussaka allégée, les saveurs grecques a la maison."],
+
+["Ceviche de daurade maison","Diner","15 min",
+ ["150g daurade tres fraiche","Jus de 3 citrons verts","Oignon rouge","Coriandre","Piment doux"],
+ ["Coupe la daurade en petits des.",
+  "Couvre de jus de citron vert et laisse mariner 15 min.",
+  "Ajoute l'oignon, la coriandre et le piment.",
+  "Melange et sers immediatement.",
+  "Accompagne de pain grille ou crackers."],
+ "Cuisson par le citron, aucune chaleur, ultra-frais."],
+
+["Poulet aux champignons a la creme legere","Diner","25 min",
+ ["150g poulet","200g champignons de Paris","1cs creme legere","Echalote","Persil"],
+ ["Fais revenir l'echalote et les champignons.",
+  "Ajoute le poulet en lamelles.",
+  "Fais cuire 8 min.",
+  "Ajoute la creme et le persil.",
+  "Laisse epaissir 2 min."],
+ "Sauce creme legere mais gourmande, valeur sure."],
+
+["Bruschetta tomates & basilic","Dejeuner rapide","10 min",
+ ["2 tranches pain de campagne","3 tomates","Basilic frais","1 gousse d'ail","Huile d'olive, fleur de sel"],
+ ["Grille le pain.",
+  "Frotte-le avec l'ail coupe en deux.",
+  "Dispose les tomates en rondelles.",
+  "Arrose d'huile d'olive.",
+  "Parseme de basilic et fleur de sel."],
+ "Antipasto italien le plus simple et le plus parfait."],
+
+["Steak de thon & ratatouille express","Dejeuner","20 min",
+ ["1 steak de thon","1 courgette","1 poivron","2 tomates","Herbes de Provence"],
+ ["Coupe les legumes en petits des.",
+  "Fais-les revenir 10 min avec les herbes.",
+  "Grille le steak de thon 1 min de chaque cote.",
+  "Sers le thon sur la ratatouille.",
+  "Arrose d'un filet d'huile d'olive."],
+ "Ratatouille rapide comme accompagnement du thon grille."],
+
+["Bol de boulgour, pois chiches & tomates sechees","Dejeuner","15 min",
+ ["120g boulgour","100g pois chiches en boite","4 tomates sechees","Persil","Vinaigrette citron"],
+ ["Fais cuire le boulgour selon les instructions.",
+  "Egoutte les pois chiches.",
+  "Coupe les tomates sechees.",
+  "Melange tous les ingredients.",
+  "Assaisonne avec la vinaigrette."],
+ "Alternative saine au riz, riche en fibres."],
+
+["Creme brulee legere au cafe","Dessert","25 min",
+ ["4 jaunes d'oeufs","500ml lait demi-ecreme","2cs cafe soluble","3cs sucre","Sucre cassonade pour la croute"],
+ ["Chauffe le lait avec le cafe.",
+  "Fouette les jaunes et le sucre.",
+  "Verse le lait chaud dessus en melangeant.",
+  "Repartis dans des ramequins.",
+  "Cuis au bain-marie 40 min a 150 degres, puis caramelise."],
+ "Dessert allege au lait demi-ecreme, saveur intense."],
+
+["Mousse au chocolat noir legere","Dessert","15 min",
+ ["150g chocolat noir 70%","4 oeufs","1 pincee de sel","Optionnel : vanille"],
+ ["Fais fondre le chocolat.",
+  "Separe les blancs des jaunes.",
+  "Melange les jaunes dans le chocolat tiedi.",
+  "Bats les blancs en neige ferme avec le sel.",
+  "Incorpore delicatement au chocolat."],
+ "Mousse sans creme ni beurre, juste chocolat et oeufs."],
+
+["Panna cotta vanille & coulis fraises","Dessert","10 min",
+ ["300ml lait demi-ecreme","2 feuilles de gelatine","1cc extrait de vanille","2cs sucre","100g fraises"],
+ ["Fais chauffer le lait avec sucre et vanille.",
+  "Dissolve la gelatine dedans.",
+  "Verse dans des verres et laisse prendre au frigo 2h.",
+  "Mixe les fraises pour le coulis.",
+  "Verse le coulis sur la panna cotta."],
+ "Dessert chic sans creme, version legere garantie."],
+
+["Yaourt glace banane & miel","Dessert","5 min",
+ ["2 yaourts grecs","1 banane","1cs miel","Quelques noix","Cannelle"],
+ ["Coupe la banane en rondelles.",
+  "Melange les yaourts avec le miel.",
+  "Dispose dans des coupes.",
+  "Ajoute les rondelles de banane.",
+  "Parseme de noix et cannelle."],
+ "Dessert fraicheur de 5 min, riche en proteines."],
+
+["Compote de pommes maison & cannelle","Dessert","15 min",
+ ["4 pommes","1cc cannelle","1cs sucre de canne","Jus d'un citron","50ml eau"],
+ ["Epluche et coupe les pommes en cubes.",
+  "Mets dans une casserole avec l'eau, le citron et le sucre.",
+  "Laisse cuire 10 min a couvert en remuant.",
+  "Ecrase grossierement ou mixe.",
+  "Parfume a la cannelle."],
+ "Zero additif, zero conservateur, naturellement sucre."],
+
+["Banana bread sain & moelleux","Dessert","40 min",
+ ["3 bananes mures","2 oeufs","100g farine complete","1cs huile de coco","1cs miel"],
+ ["Ecrase les bananes en puree.",
+  "Ajoute les oeufs, l'huile et le miel.",
+  "Incorpore la farine.",
+  "Verse dans un moule a cake.",
+  "Enfourne 30 min a 175 degres."],
+ "Gateaux maison sans beurre ni sucre raffine, moelleux garanti."],
+
+["Tartelettes aux fraises & creme legere","Dessert","20 min",
+ ["Fonds de tartelettes precuits","200g fraises","150g fromage blanc 0%","2cs miel","Menthe"],
+ ["Bats le fromage blanc avec le miel.",
+  "Remplis les fonds de tartelettes.",
+  "Dispose les fraises en tranches dessus.",
+  "Parseme de menthe.",
+  "Reserve au frais 30 min avant de servir."],
+ "Dessert leger et festif, bien presente."],
+
+["Smoothie bowl proteines & fruits","Petit dejeuner","5 min",
+ ["1 banane congelee","100g fromage blanc","Granola","Fruits frais","Miel"],
+ ["Mixe la banane congelee avec le fromage blanc.",
+  "Verse dans un bol.",
+  "Dispose les fruits frais dessus.",
+  "Parseme de granola.",
+  "Arrose d'un filet de miel."],
+ "Petit dej qui cale jusqu'au dejeuner, riche en proteines."],
+
+["Pancakes proteines banane-avoine","Petit dejeuner","15 min",
+ ["1 banane mure","2 oeufs","50g flocons d'avoine","1cc levure chimique","Optionnel : cacao"],
+ ["Mixe tous les ingredients ensemble.",
+  "Laisse reposer 2 min.",
+  "Fais cuire en petites quantites dans une poele huilée.",
+  "2 min de chaque cote.",
+  "Sers avec du miel ou des fruits."],
+ "Pancakes sans farine ni sucre ajoute, fuel parfait du matin."],
+
+["Oeuf poche sur toast avocat","Petit dejeuner","10 min",
+ ["2 oeufs","1 avocat","2 tranches de pain au levain","Piment en flocons","Citron, sel"],
+ ["Toaste le pain.",
+  "Ecrase l'avocat avec sel et citron.",
+  "Poche les oeufs 3 min dans l'eau frémissante.",
+  "Etale l'avocat sur le toast.",
+  "Pose l'oeuf poche et parseme de piment."],
+ "Le breakfast tendance, parfait pour partir fort."],
+
+["Porridge avoine aux fruits rouges","Petit dejeuner","10 min",
+ ["80g flocons d'avoine","300ml lait demi-ecreme","1cs miel","100g fruits rouges","Cannelle"],
+ ["Chauffe les flocons dans le lait en remuant.",
+  "Laisse epaissir 5 min.",
+  "Sucre avec le miel.",
+  "Verse dans un bol et depose les fruits rouges.",
+  "Saupoudre de cannelle."],
+ "Petit dej riche en fibres, energie diffuse toute la matinee."]
+];
+
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+const WEEK_DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+let mealPlan = generateMealPlan();
+let mealDay = 0;
+
+function generateMealPlan(){
+  const shuffled = shuffle([...DB]);
+  return WEEK_DAYS.map((d,i) => ({ day:d, recipe: shuffled[i % shuffled.length] }));
+}
+
+function regenerate(dayIndex){
+  const current = mealPlan[dayIndex].recipe;
+  const others = DB.filter(r => r[0] !== current[0]);
+  mealPlan[dayIndex].recipe = others[Math.floor(Math.random()*others.length)];
+  renderMeals();
+}
+
+function renderMeals(){
+  var sel = document.getElementById('meal-day-sel');
+  var content = document.getElementById('meal-content');
+  if(!sel || !content) return;
+  var btns = '';
+  WEEK_DAYS.forEach(function(d,i){
+    var cls = 'chip' + (i===mealDay?' active':'');
+    var r = mealPlan[i].recipe;
+    btns += '<button class="'+cls+'" onclick="mealDay='+i+';renderMeals()" title="'+r[0]+'">'+d+'</button>';
+  });
+  sel.innerHTML = btns;
+  var r = mealPlan[mealDay].recipe;
+  var name=r[0], type=r[1], time=r[2], ing=r[3], steps=r[4], tips=r[5];
+  var typeEmoji = type==='Dessert'?'🍰':type==='Petit dejeuner'?'🌅':type.includes('rapide')?'⚡':'🍽️';
+  var ingHtml = ing.map(function(x){return '<div style="font-size:.88rem;padding:.3rem 0;border-bottom:1px solid var(--c-border)">• '+x+'</div>';}).join('');
+  var stepsHtml = steps.map(function(x,i){return '<div style="font-size:.88rem;display:flex;gap:.6rem;padding:.4rem 0;border-bottom:1px solid var(--c-border)"><span style="min-width:22px;height:22px;background:var(--grad-accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">'+(i+1)+'</span><span>'+x+'</span></div>';}).join('');
+  content.innerHTML =
+    '<div class="card card-glow">'+
+      '<div class="day-header">'+
+        '<div>'+
+          '<div class="day-title">'+name+'</div>'+
+          '<div class="day-subtitle">'+WEEK_DAYS[mealDay]+' &middot; '+type+' &middot; '+time+'</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:.5rem;align-items:center">'+
+          '<span class="badge badge-orange">'+typeEmoji+' '+type+'</span>'+
+          '<span class="badge badge-accent">⏱ '+time+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="g2" style="margin-top:.75rem">'+
+        '<div class="card" style="padding:1.25rem;background:var(--c-surface)">'+
+          '<h3 style="font-family:var(--ff-h);font-size:1rem;font-weight:700;margin-bottom:.75rem">🧂 Ingrédients</h3>'+
+          ingHtml+
+        '</div>'+
+        '<div class="card" style="padding:1.25rem;background:var(--c-surface)">'+
+          '<h3 style="font-family:var(--ff-h);font-size:1rem;font-weight:700;margin-bottom:.75rem">👨‍🍳 Étapes</h3>'+
+          stepsHtml+
+        '</div>'+
+      '</div>'+
+      '<div style="margin-top:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">'+
+        '<span class="badge badge-green">💡 '+tips+'</span>'+
+        '<button class="btn btn-ghost" onclick="regenerate('+mealDay+')" style="gap:.4rem">'+
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>'+
+          'Autre recette'+
+        '</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="card" style="margin-top:1rem;padding:1rem">'+
+      '<h3 style="font-family:var(--ff-h);font-size:.95rem;font-weight:700;margin-bottom:.75rem">📅 Toute la semaine</h3>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem">'+
+      WEEK_DAYS.map(function(d,i){
+        var mr=mealPlan[i].recipe;
+        return '<div onclick="mealDay='+i+';renderMeals()" style="cursor:pointer;padding:.6rem;background:'+(i===mealDay?'rgba(124,107,255,.15)':'var(--c-surface2)')+';border:1px solid '+(i===mealDay?'rgba(124,107,255,.4)':'var(--c-border)')+';border-radius:var(--r)">'+
+          '<div style="font-size:.7rem;font-weight:700;color:var(--c-accent);text-transform:uppercase;margin-bottom:.2rem">'+d+'</div>'+
+          '<div style="font-size:.8rem;color:var(--c-text);line-height:1.3">'+mr[0]+'</div>'+
+        '</div>';
+      }).join('')+
+      '</div>'+
+      '<button class="btn btn-accent" style="margin-top:1rem;width:100%;justify-content:center" onclick="mealPlan=generateMealPlan();renderMeals()">'+
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>'+
+        'Regénérer tout le planning'+
+      '</button>'+
+    '</div>';
+}
+
+// INIT
+renderProg();
+renderMeals();
+
+</script>
+</body>
+</html>
